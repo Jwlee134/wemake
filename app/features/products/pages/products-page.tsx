@@ -1,17 +1,8 @@
-import { Link } from "react-router";
-import type { Route } from "./+types/products-page";
+import { redirect } from "react-router";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Products | wemake" },
-    { name: "description", content: "Explore all products" },
-  ];
-}
+// You don't have to return a JSX in the page component.
+// You can return a redirect or even a json response.
 
-export default function ProductsPage() {
-  return (
-    <div>
-      <h1>Products Page</h1>
-    </div>
-  );
+export function loader() {
+  return redirect("/products/leaderboards");
 }

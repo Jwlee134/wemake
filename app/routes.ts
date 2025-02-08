@@ -28,6 +28,10 @@ export default [
         "/daily/:year/:month/:day",
         "features/products/pages/leaderboards-daily-page.tsx"
       ),
+      route(
+        "/:period",
+        "features/products/pages/leaderboards-redirection-page.tsx"
+      ),
     ]),
     ...prefix("categories", [
       index("features/products/pages/categories-page.tsx"),
