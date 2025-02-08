@@ -63,8 +63,8 @@ const menus = [
     ],
   },
   {
-    name: "Products",
-    to: "/products",
+    name: "Jobs",
+    to: "/jobs",
     items: [
       {
         name: "Remote Jobs",
@@ -197,7 +197,11 @@ export default function Navigation({
                     </NavigationMenuContent>
                   </>
                 ) : (
-                  <Link to={menu.to} className={navigationMenuTriggerStyle()}>
+                  <Link
+                    key={menu.name}
+                    to={menu.to}
+                    className={navigationMenuTriggerStyle()}
+                  >
                     {menu.name}
                   </Link>
                 )}
