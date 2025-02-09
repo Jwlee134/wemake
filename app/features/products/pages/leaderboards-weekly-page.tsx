@@ -1,16 +1,137 @@
+import { DateTime } from "luxon";
 import type { Route } from "./+types/leaderboards-weekly-page";
+import { data, isRouteErrorResponse } from "react-router";
+import { z } from "zod";
+import Hero from "~/common/components/hero";
+import { ProductCard } from "../components/product-card";
+import { Button } from "~/common/components/ui/button";
+import { Link } from "react-router";
+import ProductPagination from "~/common/components/product-pagination";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ data }: Route.MetaArgs) {
+  const date = DateTime.fromObject({
+    weekYear: data.year,
+    weekNumber: data.week,
+  });
+
   return [
-    { title: "Weekly Leaderboard | wemake" },
+    {
+      title: `The best of week ${date
+        .startOf("week")
+        .toLocaleString(DateTime.DATE_SHORT)} - ${date
+        .endOf("week")
+        .toLocaleString(DateTime.DATE_SHORT)} | wemake`,
+    },
     { name: "description", content: "Weekly product leaderboard" },
   ];
 }
 
-export default function LeaderboardsWeeklyPage() {
+// paramsSchema is used to validate the params from the route
+// z.coerce.number() is used to convert the params to numbers
+const paramsSchema = z.object({
+  year: z.coerce.number(),
+  week: z.coerce.number(),
+});
+
+export function loader({ params }: Route.LoaderArgs) {
+  const { success, data: parsedData } = paramsSchema.safeParse(params);
+
+  if (!success) {
+    throw data({ message: "Invalid date" }, { status: 400 });
+  }
+
+  const date = DateTime.fromObject({
+    weekYear: parsedData.year,
+    weekNumber: parsedData.week,
+  });
+  const today = DateTime.now().startOf("week");
+
+  if (!date.isValid || (date.isValid && date > today)) {
+    // When an error thrown with a message, it will be caught by the nearest ErrorBoundary
+    // You can either throw new Error or use data()
+    throw data({ message: "Invalid date" }, { status: 400 });
+    // throw new Error("Invalid date!!");
+  }
+  return { ...parsedData };
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  // When an error is thrown with data() and 4xx/5xx status code, it will be caught here
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        Error in Weekly Leaderboard Page
+        <p>{error.data.message}</p>
+      </div>
+    );
+  }
+  // When an error is thrown with Error instance, it will be caught here
+  if (error instanceof Error) {
+    return (
+      <div>
+        Error in Weekly Leaderboard Page
+        <p>{error.message}</p>
+      </div>
+    );
+  }
+  return <div>Unknown Error</div>;
+}
+
+export default function LeaderboardsWeeklyPage({
+  loaderData,
+}: Route.ComponentProps) {
+  const date = DateTime.fromObject({
+    weekYear: loaderData.year,
+    weekNumber: loaderData.week,
+  });
+  const isThisWeek = date.equals(DateTime.now().startOf("week"));
+
+  const previousWeek = date.minus({ week: 1 });
+  const nextWeek = date.plus({ week: 1 });
+
   return (
-    <div>
-      <h1>Weekly Leaderboard Page</h1>
+    <div className="space-y-10">
+      <Hero
+        title={`The best of week ${date
+          .startOf("week")
+          .toLocaleString(DateTime.DATE_SHORT)} - ${date
+          .endOf("week")
+          .toLocaleString(DateTime.DATE_SHORT)}`}
+      />
+      <div className="flex items-center gap-2 justify-center">
+        <Button variant={"secondary"} asChild>
+          <Link
+            to={`/products/leaderboards/weekly/${previousWeek.weekYear}/${previousWeek.weekNumber}`}
+            replace
+          >
+            &larr; {previousWeek.toLocaleString(DateTime.DATE_SHORT)}
+          </Link>
+        </Button>
+        {!isThisWeek ? (
+          <Button variant={"secondary"} asChild>
+            <Link
+              to={`/products/leaderboards/weekly/${nextWeek.weekYear}/${nextWeek.weekNumber}`}
+              replace
+            >
+              {nextWeek.toLocaleString(DateTime.DATE_SHORT)} &rarr;
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+      <div className="space-y-5 w-full max-w-screen-md mx-auto">
+        {Array.from({ length: 10 }).map((_, index) => (
+          <ProductCard
+            key={index}
+            id="productId"
+            name="Product Name"
+            description="Product Description"
+            commentsCount={12}
+            viewsCount={12}
+            votesCount={12}
+          />
+        ))}
+      </div>
+      <ProductPagination totalPages={10} />
     </div>
   );
 }

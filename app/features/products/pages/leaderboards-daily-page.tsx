@@ -8,9 +8,10 @@ import { Button } from "~/common/components/ui/button";
 import { Link } from "react-router";
 import ProductPagination from "~/common/components/product-pagination";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ data }: Route.MetaArgs) {
+  const date = DateTime.fromObject(data);
   return [
-    { title: "Daily Leaderboard | wemake" },
+    { title: `The best of ${date.toLocaleString(DateTime.DATE_MED)} | wemake` },
     { name: "description", content: "Daily product leaderboard" },
   ];
 }
