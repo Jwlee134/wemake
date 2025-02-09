@@ -28,8 +28,6 @@ export function loader({ request }: Route.LoaderArgs) {
   if (!success) {
     throw new Error("Invalid params");
   }
-
-  console.log(parsedData);
 }
 
 export default function SearchPage() {
