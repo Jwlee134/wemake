@@ -39,7 +39,6 @@ export function loader({ params }: Route.LoaderArgs) {
     throw data({ message: "Invalid date" }, { status: 400 });
     // throw new Error("Invalid date!!");
   }
-
   return { ...parsedData };
 }
 
