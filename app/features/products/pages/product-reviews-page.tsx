@@ -1,4 +1,6 @@
+import { Button } from "~/common/components/ui/button";
 import type { Route } from "./+types/product-reviews-page";
+import { ReviewCard } from "../components/review-card";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -11,9 +13,24 @@ export default function ProductReviewsPage({
   loaderData,
 }: Route.ComponentProps) {
   return (
-    <div>
-      <h1>Product Reviews</h1>
-      {/* List of reviews would be displayed here */}
+    <div className="space-y-10 max-w-xl">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">100 reviews</h2>
+        <Button variant={"secondary"}>Write a review</Button>
+      </div>
+      <div className="space-y-20">
+        {Array.from({ length: 10 }).map((_, index) => (
+          <ReviewCard
+            key={index}
+            avatarUrl="https://github.com/meta.png"
+            authorName="John Doe"
+            username="username"
+            rating={5}
+            content="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+            timestamp="10 hours ago"
+          />
+        ))}
+      </div>
     </div>
   );
 }
