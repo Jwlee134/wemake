@@ -7,7 +7,7 @@ import { Textarea } from "./ui/textarea";
 interface InputWithLabelProps
   extends InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
   label: string;
-  description: string;
+  description?: string;
   textarea?: boolean;
 }
 
