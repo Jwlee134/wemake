@@ -1,5 +1,12 @@
 import type { Route } from "./+types/product-reviews-page";
 
+export function meta({ params }: Route.MetaArgs) {
+  return [
+    { title: `Product Reviews | wemake` },
+    { name: "description", content: "Product reviews and ratings" },
+  ];
+}
+
 export default function ProductReviewsPage({
   loaderData,
 }: Route.ComponentProps) {
