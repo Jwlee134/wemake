@@ -13,7 +13,7 @@ export function loader({ params }: Route.LoaderArgs) {
   const period = params.period;
 
   let url = "";
-  const today = DateTime.now().setZone("Asia/Seoul");
+  const today = DateTime.now();
 
   if (period === "daily") {
     url = `/products/leaderboards/daily/${today.year}/${today.month}/${today.day}`;

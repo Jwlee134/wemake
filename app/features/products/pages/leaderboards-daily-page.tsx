@@ -2,6 +2,11 @@ import { DateTime } from "luxon";
 import type { Route } from "./+types/leaderboards-daily-page";
 import { data, isRouteErrorResponse } from "react-router";
 import { z } from "zod";
+import Hero from "~/common/components/hero";
+import { ProductCard } from "../components/product-card";
+import { Button } from "~/common/components/ui/button";
+import { Link } from "react-router";
+import ProductPagination from "~/common/components/product-pagination";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -26,7 +31,7 @@ export function loader({ params }: Route.LoaderArgs) {
   }
 
   const date = DateTime.fromObject(parsedData);
-  const today = DateTime.now().setZone("Asia/Seoul").startOf("day");
+  const today = DateTime.now().startOf("day");
 
   if (!date.isValid || (date.isValid && date > today)) {
     // When an error thrown with a message, it will be caught by the nearest ErrorBoundary
@@ -35,7 +40,7 @@ export function loader({ params }: Route.LoaderArgs) {
     // throw new Error("Invalid date!!");
   }
 
-  return { date };
+  return { ...parsedData };
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -63,5 +68,57 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 export default function LeaderboardsDailyPage({
   loaderData,
 }: Route.ComponentProps) {
-  return <div>Daily Leaderboard Page</div>;
+  const date = DateTime.fromObject({
+    year: loaderData.year,
+    month: loaderData.month,
+    day: loaderData.day,
+  });
+  const isToday = date.equals(DateTime.now().startOf("day"));
+
+  const previousDate = date.minus({ day: 1 });
+  const nextDate = date.plus({ day: 1 });
+
+  return (
+    <div className="space-y-10">
+      <Hero title={`The best of ${date.toLocaleString(DateTime.DATE_MED)}`} />
+      <div className="flex items-center gap-2 justify-center">
+        <Button variant={"secondary"} asChild>
+          <Link
+            to={`/products/leaderboards/daily/${previousDate.toFormat(
+              "yyyy/MM/dd"
+            )}`}
+            replace
+          >
+            &larr; {previousDate.toLocaleString(DateTime.DATE_SHORT)}
+          </Link>
+        </Button>
+        {!isToday ? (
+          <Button variant={"secondary"} asChild>
+            <Link
+              to={`/products/leaderboards/daily/${nextDate.toFormat(
+                "yyyy/MM/dd"
+              )}`}
+              replace
+            >
+              {nextDate.toLocaleString(DateTime.DATE_SHORT)} &rarr;
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+      <div className="space-y-5 w-full max-w-screen-md mx-auto">
+        {Array.from({ length: 10 }).map((_, index) => (
+          <ProductCard
+            key={index}
+            id="productId"
+            name="Product Name"
+            description="Product Description"
+            commentsCount={12}
+            viewsCount={12}
+            votesCount={12}
+          />
+        ))}
+      </div>
+      <ProductPagination totalPages={10} />
+    </div>
+  );
 }
