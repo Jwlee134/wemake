@@ -1,6 +1,8 @@
 export const JOB_TYPES = [
   { label: "Full-time", value: "full-time" },
   { label: "Part-time", value: "part-time" },
+  { label: "Internship", value: "internship" },
+  { label: "Freelance", value: "freelance" },
 ] as const;
 
 export const LOCATION_TYPES = [
@@ -16,4 +18,5 @@ export const SALARY_RANGES = [
   "$150,000 - $200,000",
   "$200,000 - $250,000",
   "$250,000 - $300,000",
+  "$300,000+",
 ] as const;
