@@ -10,11 +10,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import "./app.css";
 import type { Route } from "./+types/root";
 import Navigation from "./common/components/navigation";
+import { cn } from "./lib/utils";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -39,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <main className="px-20">{children}</main>
+        <main>{children}</main>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -48,13 +50,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { pathname } = useLocation();
+
   return (
-    <div className="py-28">
-      <Navigation
-        isLoggedIn={true}
-        hasMessages={true}
-        hasNotifications={true}
-      />
+    <div className={cn("py-28", pathname.includes("/auth/") && "py-0")}>
+      {pathname.includes("/auth/") ? null : (
+        <Navigation
+          isLoggedIn={true}
+          hasMessages={true}
+          hasNotifications={true}
+        />
+      )}
       <Outlet />
     </div>
   );
