@@ -5,7 +5,7 @@ import { Button } from "~/common/components/ui/button";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Join" },
+    { title: "Join | wemake" },
     { name: "description", content: "Create a new account" },
   ];
 }

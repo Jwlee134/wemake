@@ -2,7 +2,7 @@ import type { Route } from "./+types/social-complete-page";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Complete Social Login" },
+    { title: "Complete Social Login | wemake" },
     { name: "description", content: "Complete your social login" },
   ];
 }

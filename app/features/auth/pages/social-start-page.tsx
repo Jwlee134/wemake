@@ -2,7 +2,7 @@ import type { Route } from "./+types/social-start-page";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Social Login" },
+    { title: "Social Login | wemake" },
     { name: "description", content: "Login with your social account" },
   ];
 }
