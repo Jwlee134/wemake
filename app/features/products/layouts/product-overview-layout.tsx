@@ -8,7 +8,7 @@ export default function ProductOverviewLayout({
   params: { productId },
 }: Route.ComponentProps) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 px-20">
       <div className="flex justify-between">
         <div className="flex gap-10">
           <div className="size-40 rounded-xl overflow-hidden shadow-xl bg-primary"></div>
