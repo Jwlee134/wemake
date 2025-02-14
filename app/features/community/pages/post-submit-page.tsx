@@ -1,5 +1,5 @@
 import Hero from "~/common/components/hero";
-import type { Route } from "./+types/submit-page";
+import type { Route } from "./+types/post-submit-page";
 import { Form } from "react-router";
 import InputWithLabel from "~/common/components/input-with-label";
 import SelectWithLabel from "~/common/components/select-with-label";

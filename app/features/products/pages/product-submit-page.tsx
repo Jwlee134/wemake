@@ -1,5 +1,5 @@
 import { Form } from "react-router";
-import type { Route } from "./+types/submit-page";
+import type { Route } from "./+types/product-submit-page";
 import Hero from "~/common/components/hero";
 import InputWithLabel from "~/common/components/input-with-label";
 import SelectWithLabel from "~/common/components/select-with-label";
