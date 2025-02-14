@@ -15,7 +15,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function SubmitPage() {
+export default function PostSubmitPage() {
   return (
     <div className="space-y-10">
       <Hero
