@@ -102,5 +102,11 @@ export default [
     route("/profile", "features/users/pages/profile-page.tsx"),
     route("/settings", "features/users/pages/settings-page.tsx"),
   ]),
-  route("/users/:userId", "features/users/pages/user-page.tsx"),
+  layout("features/users/layouts/user-layout.tsx", [
+    ...prefix("users/:username", [
+      index("features/users/pages/user-page.tsx"),
+      route("/products", "features/users/pages/user-products-page.tsx"),
+      route("/posts", "features/users/pages/user-posts-page.tsx"),
+    ]),
+  ]),
 ] satisfies RouteConfig;

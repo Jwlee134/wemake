@@ -54,8 +54,16 @@ export default function SettingsPage() {
               id="bio"
               description="Your bio will be displayed to other users."
               required
-              placeholder="e.g. I'm a software engineer at Google."
+              placeholder="e.g. I'm a software engineer at Google. I'm passionate about creating products that help people. I'm also a big fan of the web."
               textarea
+            />
+            <InputWithLabel
+              label="Headline"
+              name="headline"
+              id="headline"
+              description="Your headline will be displayed to other users."
+              required
+              placeholder="e.g. Product Designer at wemake"
             />
             <Button type="submit" className="w-full">
               Update
