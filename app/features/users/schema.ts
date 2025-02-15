@@ -7,7 +7,12 @@ import {
   pgEnum,
   jsonb,
   primaryKey,
+  bigint,
+  boolean,
+  integer,
 } from "drizzle-orm/pg-core";
+import { products } from "../products/schema";
+import { posts } from "../community/schema";
 
 export const roles = pgEnum("role", [
   "developer",
@@ -53,3 +58,74 @@ export const follows = pgTable(
   },
   (t) => [primaryKey({ columns: [t.follower_id, t.following_id] })]
 );
+
+export const notificationType = pgEnum("notification_type", [
+  "follow",
+  "review",
+  "reply",
+  "mention",
+]);
+
+export const notifications = pgTable("notifications", {
+  notification_id: bigint({ mode: "number" })
+    .primaryKey()
+    .generatedAlwaysAsIdentity(),
+  sender_id: uuid().references(() => profiles.profile_id, {
+    onDelete: "cascade",
+  }),
+  receiver_id: uuid()
+    .references(() => profiles.profile_id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  product_id: bigint({ mode: "number" }).references(() => products.product_id, {
+    onDelete: "cascade",
+  }),
+  post_id: bigint({ mode: "number" }).references(() => posts.post_id, {
+    onDelete: "cascade",
+  }),
+  type: notificationType().notNull(),
+  created_at: timestamp().notNull().defaultNow(),
+});
+
+export const messageRooms = pgTable("message_rooms", {
+  message_room_id: bigint({ mode: "number" })
+    .primaryKey()
+    .generatedAlwaysAsIdentity(),
+  created_at: timestamp().notNull().defaultNow(),
+});
+
+export const messageRoomMembers = pgTable(
+  "message_room_members",
+  {
+    message_room_id: bigint({ mode: "number" }).references(
+      () => messageRooms.message_room_id,
+      {
+        onDelete: "cascade",
+      }
+    ),
+    profile_id: uuid().references(() => profiles.profile_id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.message_room_id, t.profile_id] })]
+);
+
+export const messages = pgTable("messages", {
+  message_id: bigint({ mode: "number" })
+    .primaryKey()
+    .generatedAlwaysAsIdentity(),
+  message_room_id: bigint({ mode: "number" }).references(
+    () => messageRooms.message_room_id,
+    {
+      onDelete: "cascade",
+    }
+  ),
+  sender_id: uuid().references(() => profiles.profile_id, {
+    onDelete: "cascade",
+  }),
+  content: text().notNull(),
+  seen_by: integer().notNull().default(0),
+  created_at: timestamp().notNull().defaultNow(),
+});

@@ -43,6 +43,13 @@
       "when": 1739599627564,
       "tag": "0005_lame_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1739600995877,
+      "tag": "0006_aberrant_big_bertha",
+      "breakpoints": true
     }
   ]
 }
