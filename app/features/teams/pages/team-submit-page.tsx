@@ -4,6 +4,7 @@ import { Form } from "react-router";
 import { Button } from "~/common/components/ui/button";
 import InputWithLabel from "~/common/components/input-with-label";
 import SelectWithLabel from "~/common/components/select-with-label";
+import { PRODUCT_STAGES } from "../constants";
 
 export function meta({ matches }: Route.MetaArgs) {
   return [{ title: "Submit Team | wemake" }];
@@ -27,12 +28,7 @@ export default function TeamSubmitPage({ loaderData }: Route.ComponentProps) {
           <SelectWithLabel
             label="What is the stage of your product?"
             name="stage"
-            options={[
-              { label: "Idea", value: "idea" },
-              { label: "MVP", value: "mvp" },
-              { label: "Growth", value: "growth" },
-              { label: "Mature", value: "mature" },
-            ]}
+            options={PRODUCT_STAGES}
             required
             placeholder="Select product stage"
             description="Select the stage of your product"
