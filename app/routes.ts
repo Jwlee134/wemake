@@ -94,9 +94,11 @@ export default [
         "features/users/pages/dashboard-product-page.tsx"
       ),
     ]),
-    ...prefix("messages", [
-      index("features/users/pages/messages-page.tsx"),
-      route("/:messageId", "features/users/pages/message-page.tsx"),
+    layout("features/users/layouts/messages-layout.tsx", [
+      ...prefix("messages", [
+        index("features/users/pages/messages-page.tsx"),
+        route("/:messageId", "features/users/pages/message-page.tsx"),
+      ]),
     ]),
     route("/notifications", "features/users/pages/notifications-page.tsx"),
     route("/profile", "features/users/pages/profile-page.tsx"),
