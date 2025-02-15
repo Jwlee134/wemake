@@ -6,6 +6,7 @@ import {
   timestamp,
   pgEnum,
   jsonb,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 export const roles = pgEnum("role", [
@@ -33,21 +34,22 @@ export const profiles = pgTable("profiles", {
   headline: text(),
   bio: text(),
   role: roles().default("developer").notNull(),
-  stats: jsonb().$type<{
-    followers: number;
-    following: number;
-  }>(),
+  stats: jsonb().notNull().default({ followers: 0, following: 0 }),
   views: jsonb(),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 });
 
-export const follows = pgTable("follows", {
-  follower_id: uuid().references(() => profiles.profile_id, {
-    onDelete: "cascade",
-  }),
-  following_id: uuid().references(() => profiles.profile_id, {
-    onDelete: "cascade",
-  }),
-  created_at: timestamp().notNull().defaultNow(),
-});
+export const follows = pgTable(
+  "follows",
+  {
+    follower_id: uuid().references(() => profiles.profile_id, {
+      onDelete: "cascade",
+    }),
+    following_id: uuid().references(() => profiles.profile_id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.follower_id, t.following_id] })]
+);
