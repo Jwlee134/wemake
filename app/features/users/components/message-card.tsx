@@ -16,7 +16,7 @@ interface MessageCardProps {
   messageId: string;
 }
 
-export function MessageCard({
+export default function MessageCard({
   avatarUrl,
   name,
   lastMessage,
