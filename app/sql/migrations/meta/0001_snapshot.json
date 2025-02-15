@@ -159,12 +159,8 @@
           "name": "follows_follower_id_profiles_profile_id_fk",
           "tableFrom": "follows",
           "tableTo": "profiles",
-          "columnsFrom": [
-            "follower_id"
-          ],
-          "columnsTo": [
-            "profile_id"
-          ],
+          "columnsFrom": ["follower_id"],
+          "columnsTo": ["profile_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -172,12 +168,8 @@
           "name": "follows_following_id_profiles_profile_id_fk",
           "tableFrom": "follows",
           "tableTo": "profiles",
-          "columnsFrom": [
-            "following_id"
-          ],
-          "columnsTo": [
-            "profile_id"
-          ],
+          "columnsFrom": ["following_id"],
+          "columnsTo": ["profile_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -270,35 +262,12 @@
           "tableFrom": "profiles",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": [
-            "profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "auth.users": {
-      "name": "users",
-      "schema": "auth",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -310,21 +279,12 @@
     "public.job_types": {
       "name": "job_types",
       "schema": "public",
-      "values": [
-        "full-time",
-        "part-time",
-        "internship",
-        "freelance"
-      ]
+      "values": ["full-time", "part-time", "internship", "freelance"]
     },
     "public.locations": {
       "name": "locations",
       "schema": "public",
-      "values": [
-        "on-site",
-        "remote",
-        "hybrid"
-      ]
+      "values": ["on-site", "remote", "hybrid"]
     },
     "public.salary_ranges": {
       "name": "salary_ranges",

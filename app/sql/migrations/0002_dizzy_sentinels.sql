@@ -39,8 +39,6 @@ CREATE TABLE "products" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "auth"."users" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP TABLE "auth"."users" CASCADE;--> statement-breakpoint
 ALTER TABLE "profiles" ALTER COLUMN "stats" SET DEFAULT '{"followers":0,"following":0}'::jsonb;--> statement-breakpoint
 ALTER TABLE "profiles" ALTER COLUMN "stats" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "follows" ADD CONSTRAINT "follows_follower_id_following_id_pk" PRIMARY KEY("follower_id","following_id");--> statement-breakpoint
