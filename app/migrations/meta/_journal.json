@@ -8,6 +8,13 @@
       "when": 1739594424775,
       "tag": "0000_military_lester",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1739595656564,
+      "tag": "0001_heavy_black_tom",
+      "breakpoints": true
     }
   ]
 }
