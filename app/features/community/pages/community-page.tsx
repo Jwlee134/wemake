@@ -12,6 +12,7 @@ import { ChevronDownIcon } from "lucide-react";
 import { PERIOD_OPTIONS, SORT_OPTIONS } from "../constants";
 import { Input } from "~/common/components/ui/input";
 import { PostCard } from "../components/post-card";
+import { getPosts, getPostTopics } from "../queries";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,7 +21,13 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function CommunityPage() {
+export async function loader() {
+  const postTopics = await getPostTopics();
+  const posts = await getPosts();
+  return { postTopics, posts };
+}
+
+export default function CommunityPage({ loaderData }: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sort = searchParams.get("sort");
   const period = searchParams.get("period");
@@ -103,15 +110,16 @@ export default function CommunityPage() {
             </Button>
           </div>
           <div className="space-y-5">
-            {Array.from({ length: 10 }).map((_, index) => (
+            {loaderData.posts.map((post) => (
               <PostCard
-                key={index}
-                id="postId"
-                title="What is the best way to learn React?"
-                authorName="Jaewon"
-                authorAvatarUrl="https://github.com/apple.png"
-                category="React"
-                postedAt="12 hours ago"
+                key={post.id}
+                id={post.id}
+                title={post.title}
+                authorName={post.authorName}
+                authorAvatarUrl={post.authorAvatarUrl}
+                category={post.topic}
+                postedAt={post.createdAt}
+                votesCount={post.upvotes}
                 expanded
               />
             ))}
@@ -122,14 +130,16 @@ export default function CommunityPage() {
             Topics
           </span>
           <div className="flex flex-col gap-4 items-start">
-            {[
-              "AI Tools",
-              "Design Tools",
-              "Dev Tools",
-              "Productivity Tools",
-            ].map((category) => (
-              <Button variant={"link"} key={category} className="pl-0" asChild>
-                <Link to={`/community?topic=${category}`}>{category}</Link>
+            {loaderData.postTopics.map((category) => (
+              <Button
+                variant={"link"}
+                key={category.slug}
+                className="pl-0"
+                asChild
+              >
+                <Link to={`/community?topic=${category.slug}`}>
+                  {category.name}
+                </Link>
               </Button>
             ))}
           </div>
