@@ -56,22 +56,26 @@ export async function getPosts() {
 
   // supabase is throwing an error because of this, to make you choose between the two.
   // if you look at the error details, you can find the key.
-  const { data, error } = await client.from("posts").select(`
-    post_id, 
-    title, 
-    created_at,
-    topic:post_topics!inner (
-      name
-    ),
-    author:profiles!posts_profile_id_profiles_profile_id_fk!inner (
-      name,
-      avatar,
-      username
-    ),
-    upvotes:post_upvotes (
-      count
-    )
-  `);
+  // const { data, error } = await client.from("posts").select(`
+  //   post_id,
+  //   title,
+  //   created_at,
+  //   topic:post_topics!inner (
+  //     name
+  //   ),
+  //   author:profiles!posts_profile_id_profiles_profile_id_fk!inner (
+  //     name,
+  //     avatar,
+  //     username
+  //   ),
+  //   upvotes:post_upvotes (
+  //     count
+  //   )
+  // `);
+
+  const { data, error } = await client
+    .from("community_post_list_view")
+    .select("*");
 
   if (error) throw new Error(error.message);
 
