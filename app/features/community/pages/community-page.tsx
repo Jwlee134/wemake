@@ -1,7 +1,7 @@
 import Hero from "~/common/components/hero";
 import type { Route } from "./+types/community-page";
 import { Button } from "~/common/components/ui/button";
-import { Form, Link, useSearchParams } from "react-router";
+import { Await, Form, Link, useSearchParams } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,6 +13,7 @@ import { PERIOD_OPTIONS, SORT_OPTIONS } from "../constants";
 import { Input } from "~/common/components/ui/input";
 import { PostCard } from "../components/post-card";
 import { getPosts, getPostTopics } from "../queries";
+import { Suspense } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,12 +23,17 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const postTopics = await getPostTopics();
-  const posts = await getPosts();
-  return { postTopics, posts };
+  // const [postTopics, posts] = await Promise.all([getPostTopics(), getPosts()]);
+
+  const topics = getPostTopics();
+  const posts = getPosts();
+
+  return { topics, posts };
 }
 
 export default function CommunityPage({ loaderData }: Route.ComponentProps) {
+  const { topics, posts } = loaderData;
+
   const [searchParams, setSearchParams] = useSearchParams();
   const sort = searchParams.get("sort");
   const period = searchParams.get("period");
@@ -109,40 +115,52 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
               <Link to="/community/submit">Create Discussion</Link>
             </Button>
           </div>
-          <div className="space-y-5">
-            {loaderData.posts.map((post) => (
-              <PostCard
-                key={post.post_id}
-                id={post.post_id}
-                title={post.title}
-                authorName={post.author_name}
-                authorAvatarUrl={post.author_avatar}
-                category={post.topic}
-                postedAt={post.created_at}
-                votesCount={post.upvotes}
-                expanded
-              />
-            ))}
-          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Await resolve={posts}>
+              {(posts) => (
+                <div className="space-y-5">
+                  {posts.map((post) => (
+                    <PostCard
+                      key={post.post_id}
+                      id={post.post_id}
+                      title={post.title}
+                      authorName={post.author_name}
+                      authorAvatarUrl={post.author_avatar}
+                      category={post.topic}
+                      postedAt={post.created_at}
+                      votesCount={post.upvotes}
+                      expanded
+                    />
+                  ))}
+                </div>
+              )}
+            </Await>
+          </Suspense>
         </div>
         <aside className="col-span-2 space-y-5">
           <span className="text-sm font-bold text-muted-foreground uppercase">
             Topics
           </span>
-          <div className="flex flex-col gap-4 items-start">
-            {loaderData.postTopics.map((category) => (
-              <Button
-                variant={"link"}
-                key={category.slug}
-                className="pl-0"
-                asChild
-              >
-                <Link to={`/community?topic=${category.slug}`}>
-                  {category.name}
-                </Link>
-              </Button>
-            ))}
-          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Await resolve={topics}>
+              {(topics) => (
+                <div className="flex flex-col gap-4 items-start">
+                  {topics.map((topic) => (
+                    <Button
+                      variant={"link"}
+                      key={topic.slug}
+                      className="pl-0"
+                      asChild
+                    >
+                      <Link to={`/community?topic=${topic.slug}`}>
+                        {topic.name}
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </Await>
+          </Suspense>
         </aside>
       </div>
     </div>
