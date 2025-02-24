@@ -21,6 +21,7 @@ export const posts = pgTable("posts", {
   post_id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
   title: text().notNull(),
   content: text().notNull(),
+  upvotes: bigint({ mode: "number" }).notNull().default(0),
   topic_id: bigint({ mode: "number" }).references(() => postTopics.topic_id, {
     onDelete: "set null",
   }),
