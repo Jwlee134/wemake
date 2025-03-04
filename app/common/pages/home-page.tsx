@@ -20,7 +20,6 @@ export async function loader() {
   const products = await getProductsByDateRange({
     startDate: DateTime.now().startOf("day"),
     endDate: DateTime.now().endOf("day"),
-    limit: 7,
   });
 
   return { products };

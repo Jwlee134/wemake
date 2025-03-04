@@ -7,11 +7,12 @@ import { ProductCard } from "../components/product-card";
 import { Button } from "~/common/components/ui/button";
 import { Link } from "react-router";
 import ProductPagination from "~/common/components/product-pagination";
+import { getProductPagesByDateRange, getProductsByDateRange } from "../queries";
 
-export function meta({ data }: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
   const date = DateTime.fromObject({
-    weekYear: data.year,
-    weekNumber: data.week,
+    weekYear: Number(params.year),
+    weekNumber: Number(params.week),
   });
 
   return [
@@ -33,7 +34,7 @@ const paramsSchema = z.object({
   week: z.coerce.number(),
 });
 
-export function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { success, data: parsedData } = paramsSchema.safeParse(params);
 
   if (!success) {
@@ -52,7 +53,20 @@ export function loader({ params }: Route.LoaderArgs) {
     throw data({ message: "Invalid date" }, { status: 400 });
     // throw new Error("Invalid date!!");
   }
-  return { ...parsedData };
+
+  const url = new URL(request.url);
+
+  const products = await getProductsByDateRange({
+    startDate: date.startOf("week"),
+    endDate: date.endOf("week"),
+    page: Number(url.searchParams.get("page") ?? 1),
+  });
+  const totalPages = await getProductPagesByDateRange({
+    startDate: date.startOf("week"),
+    endDate: date.endOf("week"),
+  });
+
+  return { ...parsedData, products, totalPages };
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -119,19 +133,19 @@ export default function LeaderboardsWeeklyPage({
         ) : null}
       </div>
       <div className="space-y-5 w-full max-w-screen-md mx-auto">
-        {Array.from({ length: 10 }).map((_, index) => (
+        {loaderData.products.map((product) => (
           <ProductCard
-            key={index}
-            id="productId"
-            name="Product Name"
-            description="Product Description"
-            commentsCount={12}
-            viewsCount={12}
-            votesCount={12}
+            key={product.product_id}
+            id={product.product_id.toString()}
+            name={product.name}
+            description={product.description}
+            reviewsCount={product.reviews}
+            viewsCount={product.views}
+            votesCount={product.upvotes}
           />
         ))}
       </div>
-      <ProductPagination totalPages={10} />
+      <ProductPagination totalPages={loaderData.totalPages} />
     </div>
   );
 }

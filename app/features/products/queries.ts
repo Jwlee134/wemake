@@ -1,14 +1,15 @@
 import type { DateTime } from "luxon";
 import client from "~/supa-client";
+import { PAGE_SIZE } from "./constants";
 
 export async function getProductsByDateRange({
   startDate,
   endDate,
-  limit = 10,
+  page = 1,
 }: {
   startDate: DateTime;
   endDate: DateTime;
-  limit?: number;
+  page?: number;
 }) {
   const { data, error } = await client
     .from("products")
@@ -26,9 +27,30 @@ export async function getProductsByDateRange({
     .order("stats->>upvotes", { ascending: false })
     .lte("created_at", endDate.toISO())
     .gte("created_at", startDate.toISO())
-    .limit(limit);
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
   if (error) throw error;
 
   return data;
+}
+
+export async function getProductPagesByDateRange({
+  startDate,
+  endDate,
+}: {
+  startDate: DateTime;
+  endDate: DateTime;
+}) {
+  const { count, error } = await client
+    .from("products")
+    // head true means I don't want to get the data whatsoever, I just want to get the count.
+    .select("product_id", { count: "exact", head: true })
+    .lte("created_at", endDate.toISO())
+    .gte("created_at", startDate.toISO());
+
+  if (error) throw error;
+
+  if (!count) return 0;
+
+  return Math.ceil(count / PAGE_SIZE);
 }

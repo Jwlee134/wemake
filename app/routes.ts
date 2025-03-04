@@ -11,28 +11,30 @@ export default [
   // All of the routes below will be prefixed with "/products"
   ...prefix("products", [
     index("features/products/pages/products-page.tsx"), // This one is the root route of the prefix: "/products"
-    ...prefix("leaderboards", [
-      index("features/products/pages/leaderboards-page.tsx"), // This one is the root route of the prefix: "/products/leaderboards"
-      route(
-        "/yearly/:year", // This one is a dynamic route: "/products/leaderboards/yearly/:year"
-        "features/products/pages/leaderboards-yearly-page.tsx"
-      ),
-      route(
-        "/monthly/:year/:month",
-        "features/products/pages/leaderboards-monthly-page.tsx"
-      ),
-      route(
-        "/weekly/:year/:week",
-        "features/products/pages/leaderboards-weekly-page.tsx"
-      ),
-      route(
-        "/daily/:year/:month/:day",
-        "features/products/pages/leaderboards-daily-page.tsx"
-      ),
-      route(
-        "/:period",
-        "features/products/pages/leaderboards-redirection-page.tsx"
-      ),
+    layout("features/products/layouts/leaderboard-layout.tsx", [
+      ...prefix("leaderboards", [
+        index("features/products/pages/leaderboards-page.tsx"), // This one is the root route of the prefix: "/products/leaderboards"
+        route(
+          "/yearly/:year", // This one is a dynamic route: "/products/leaderboards/yearly/:year"
+          "features/products/pages/leaderboards-yearly-page.tsx"
+        ),
+        route(
+          "/monthly/:year/:month",
+          "features/products/pages/leaderboards-monthly-page.tsx"
+        ),
+        route(
+          "/weekly/:year/:week",
+          "features/products/pages/leaderboards-weekly-page.tsx"
+        ),
+        route(
+          "/daily/:year/:month/:day",
+          "features/products/pages/leaderboards-daily-page.tsx"
+        ),
+        route(
+          "/:period",
+          "features/products/pages/leaderboards-redirection-page.tsx"
+        ),
+      ]),
     ]),
     ...prefix("categories", [
       index("features/products/pages/categories-page.tsx"),
