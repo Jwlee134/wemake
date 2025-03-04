@@ -12,5 +12,3 @@ select
 from posts
 inner join post_topics using (topic_id)
 inner join profiles using (profile_id);
-
-select * from community_post_list_view;

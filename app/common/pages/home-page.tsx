@@ -9,6 +9,7 @@ import TeamCard from "~/features/teams/components/team-card";
 import { getProductsByDateRange } from "~/features/products/queries";
 import { DateTime } from "luxon";
 import { getPosts } from "~/features/community/queries";
+import { getGptIdeas } from "~/features/ideas/queries";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,18 +19,20 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const products = await getProductsByDateRange({
-    startDate: DateTime.now().startOf("day"),
-    endDate: DateTime.now().endOf("day"),
-  });
+  const [products, posts, gptIdeas] = await Promise.all([
+    getProductsByDateRange({
+      startDate: DateTime.now().startOf("day"),
+      endDate: DateTime.now().endOf("day"),
+    }),
+    getPosts({ limit: 8 }),
+    getGptIdeas({ limit: 10 }),
+  ]);
 
-  const posts = await getPosts({ limit: 8 });
-
-  return { products, posts };
+  return { products, posts, gptIdeas };
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { products, posts } = loaderData;
+  const { products, posts, gptIdeas } = loaderData;
 
   return (
     <div className="px-20 space-y-40">
@@ -96,15 +99,15 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             <Link to="/ideas">Explore all ideas &rarr;</Link>
           </Button>
         </div>
-        {Array.from({ length: 10 }).map((_, index) => (
+        {gptIdeas.map((idea) => (
           <IdeaCard
-            key={index}
-            id="ideaId"
-            title="A startup that creates an AI-powered generated personal trainer, delivering customized fitness plans based on your goals and preferences using a movile app to help you lose weight faster."
-            viewsCount={123}
-            postedAt="12 hours ago"
-            likesCount={12}
-            claimed={index % 2 === 0}
+            key={idea.idea_id}
+            id={idea.idea_id.toString()}
+            title={idea.idea}
+            viewsCount={idea.views}
+            postedAt={idea.created_at}
+            likesCount={idea.likes}
+            claimed={idea.is_claimed}
           />
         ))}
       </div>
