@@ -3,6 +3,7 @@ import { posts, postTopics, postUpvotes } from "./schema";
 import { count, eq } from "drizzle-orm";
 import { profiles } from "../users/schema";
 import client from "~/supa-client";
+import { DateTime } from "luxon";
 
 // export async function getPostTopics() {
 //   const allPostTopics = await db
@@ -50,7 +51,19 @@ export async function getPostTopics() {
   return data;
 }
 
-export async function getPosts() {
+export async function getPosts({
+  limit,
+  sorting = "newest",
+  period = "all",
+  keyword,
+  topic,
+}: {
+  limit: number;
+  sorting?: "newest" | "popular";
+  period?: "all" | "today" | "week" | "month" | "year";
+  keyword?: string;
+  topic?: string;
+}) {
   // posts_profile_id_profiles_profile_id_fk is used because posts is connected to profiles through profile_id,
   // and also is connected to profiles through post_upvotes.profile_id.
 
@@ -73,9 +86,54 @@ export async function getPosts() {
   //   )
   // `);
 
-  const { data, error } = await client
+  const baseQuery = client
     .from("community_post_list_view")
-    .select("*");
+    .select("*")
+    .limit(limit);
+
+  if (sorting === "newest") {
+    baseQuery.order("created_at", { ascending: false });
+  } else {
+    switch (period) {
+      case "all":
+        baseQuery.order("upvotes", { ascending: false });
+        break;
+      case "today":
+        const today = DateTime.now().startOf("day");
+        baseQuery
+          .order("upvotes", { ascending: false })
+          .gte("created_at", today.toISO());
+        break;
+      case "week":
+        const week = DateTime.now().startOf("week");
+        baseQuery
+          .order("upvotes", { ascending: false })
+          .gte("created_at", week.toISO());
+        break;
+      case "month":
+        const month = DateTime.now().startOf("month");
+        baseQuery
+          .order("upvotes", { ascending: false })
+          .gte("created_at", month.toISO());
+        break;
+      case "year":
+        const year = DateTime.now().startOf("year");
+        baseQuery
+          .order("upvotes", { ascending: false })
+          .gte("created_at", year.toISO());
+        break;
+    }
+  }
+
+  if (keyword) {
+    baseQuery.ilike("title", `%${keyword}%`);
+  }
+
+  if (topic) {
+    baseQuery.eq("topic_slug", topic);
+  }
+
+  const { data, error } = await baseQuery;
 
   if (error) throw new Error(error.message);
 

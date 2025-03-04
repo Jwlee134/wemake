@@ -1,7 +1,7 @@
 import Hero from "~/common/components/hero";
 import type { Route } from "./+types/community-page";
 import { Button } from "~/common/components/ui/button";
-import { Await, Form, Link, useSearchParams } from "react-router";
+import { Await, data, Form, Link, useSearchParams } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -14,6 +14,17 @@ import { Input } from "~/common/components/ui/input";
 import { PostCard } from "../components/post-card";
 import { getPosts, getPostTopics } from "../queries";
 import { Suspense } from "react";
+import { z } from "zod";
+
+const searchParamsSchema = z.object({
+  sorting: z.enum(["newest", "popular"]).optional().default("newest"),
+  period: z
+    .enum(["all", "today", "week", "month", "year"])
+    .optional()
+    .default("all"),
+  keyword: z.string().optional(),
+  topic: z.string().optional(),
+});
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,11 +33,26 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
+export async function loader({ request }: Route.LoaderArgs) {
   // const [postTopics, posts] = await Promise.all([getPostTopics(), getPosts()]);
 
+  const url = new URL(request.url);
+  const { success, data: parsedData } = searchParamsSchema.safeParse(
+    Object.fromEntries(url.searchParams)
+  );
+
+  if (!success) {
+    throw data({ message: "Invalid search params" }, { status: 400 });
+  }
+
   const topics = getPostTopics();
-  const posts = getPosts();
+  const posts = getPosts({
+    limit: 20,
+    sorting: parsedData.sorting,
+    period: parsedData.period,
+    keyword: parsedData.keyword,
+    topic: parsedData.topic,
+  });
 
   return { topics, posts };
 }
@@ -35,9 +61,9 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
   const { topics, posts } = loaderData;
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const sort = searchParams.get("sort");
+  const sorting = searchParams.get("sorting");
   const period = searchParams.get("period");
-
+  const keyword = searchParams.get("keyword");
   return (
     <div className="space-y-10 px-20">
       <Hero
@@ -52,7 +78,7 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center gap-1 outline-none">
                     <span className="text-sm capitalize">
-                      {sort || "Newest"}
+                      {sorting || "Newest"}
                     </span>
                     <ChevronDownIcon className="size-4" />
                   </DropdownMenuTrigger>
@@ -63,7 +89,7 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                         className="cursor-pointer"
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            searchParams.set("sort", option.value);
+                            searchParams.set("sorting", option.value);
                             if (option.value === "newest") {
                               searchParams.delete("period");
                             }
@@ -76,7 +102,7 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {sort === "popular" && (
+                {sorting === "popular" && (
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex items-center gap-1 outline-none">
                       <span className="text-sm capitalize">
@@ -106,7 +132,8 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
               <Form className="w-2/3">
                 <Input
                   type="text"
-                  name="search"
+                  name="keyword"
+                  defaultValue={keyword ?? ""}
                   placeholder="Search for discussions"
                 />
               </Form>

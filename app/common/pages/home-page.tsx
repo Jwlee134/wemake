@@ -8,6 +8,7 @@ import { JobCard } from "~/features/jobs/components/job-card";
 import TeamCard from "~/features/teams/components/team-card";
 import { getProductsByDateRange } from "~/features/products/queries";
 import { DateTime } from "luxon";
+import { getPosts } from "~/features/community/queries";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,11 +23,13 @@ export async function loader() {
     endDate: DateTime.now().endOf("day"),
   });
 
-  return { products };
+  const posts = await getPosts({ limit: 8 });
+
+  return { products, posts };
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { products } = loaderData;
+  const { products, posts } = loaderData;
 
   return (
     <div className="px-20 space-y-40">
@@ -68,15 +71,16 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             <Link to="/community">Explore all discussions &rarr;</Link>
           </Button>
         </div>
-        {Array.from({ length: 10 }).map((_, index) => (
+        {posts.map((post) => (
           <PostCard
-            key={index}
-            id="postId"
-            title="What is the best way to learn React?"
-            authorName="Jaewon"
-            authorAvatarUrl="https://github.com/apple.png"
-            category="React"
-            postedAt="12 hours ago"
+            key={post.post_id}
+            id={post.post_id}
+            title={post.title}
+            authorName={post.author_name}
+            authorAvatarUrl={post.author_avatar}
+            category={post.topic}
+            postedAt={post.created_at}
+            votesCount={post.upvotes}
           />
         ))}
       </div>{" "}
