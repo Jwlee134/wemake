@@ -57,6 +57,13 @@
       "when": 1740373316177,
       "tag": "0007_tearful_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1741045920904,
+      "tag": "0008_fair_shiver_man",
+      "breakpoints": true
     }
   ]
 }
