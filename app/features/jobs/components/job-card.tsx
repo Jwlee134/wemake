@@ -8,6 +8,7 @@ import {
 } from "~/common/components/ui/card";
 import { Button } from "~/common/components/ui/button";
 import { Badge } from "~/common/components/ui/badge";
+import { DateTime } from "luxon";
 
 interface JobCardProps {
   id: string;
@@ -17,8 +18,7 @@ interface JobCardProps {
   postedAt: string;
   employmentType: string;
   locationType: string;
-  salaryMin: number;
-  salaryMax: number;
+  salary: string;
   companyLocation: string;
 }
 
@@ -30,8 +30,7 @@ export function JobCard({
   postedAt,
   employmentType,
   locationType,
-  salaryMin,
-  salaryMax,
+  salary,
   companyLocation,
 }: JobCardProps) {
   return (
@@ -46,19 +45,25 @@ export function JobCard({
             />
             <div className="space-x-2">
               <span className="text-accent-foreground">{companyName}</span>
-              <span className="text-sm text-muted-foreground">{postedAt}</span>
+              <span className="text-sm text-muted-foreground">
+                {DateTime.fromISO(postedAt).toRelative()}
+              </span>
             </div>
           </div>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Badge variant="outline">{employmentType}</Badge>
-          <Badge variant="outline">{locationType}</Badge>
+          <Badge variant="outline" className="capitalize">
+            {employmentType}
+          </Badge>
+          <Badge variant="outline" className="capitalize">
+            {locationType}
+          </Badge>
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-muted-foreground">
-              ${salaryMin.toLocaleString()} - ${salaryMax.toLocaleString()}
+              {salary}
             </span>
             <span className="text-sm font-medium text-muted-foreground">
               {companyLocation}

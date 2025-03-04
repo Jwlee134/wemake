@@ -5,6 +5,8 @@ import { Button } from "~/common/components/ui/button";
 import { JOB_TYPES, LOCATION_TYPES, SALARY_RANGES } from "../constants";
 import { useSearchParams } from "react-router";
 import { cn } from "~/lib/utils";
+import { getJobs } from "../queries";
+import { z } from "zod";
 
 export function meta({ loaderData }: Route.ComponentProps) {
   return [
@@ -16,7 +18,43 @@ export function meta({ loaderData }: Route.ComponentProps) {
   ];
 }
 
+const searchParamsSchema = z.object({
+  type: z
+    .enum(JOB_TYPES.map((jobType) => jobType.value) as [string, ...string[]])
+    .optional(),
+  location: z
+    .enum(
+      LOCATION_TYPES.map((locationType) => locationType.value) as [
+        string,
+        ...string[]
+      ]
+    )
+    .optional(),
+  salary: z.enum(SALARY_RANGES).optional(),
+});
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const { success, data: parsedData } = searchParamsSchema.safeParse(
+    Object.fromEntries(url.searchParams)
+  );
+
+  if (!success) {
+    throw new Response("Invalid search params", { status: 400 });
+  }
+
+  const jobs = await getJobs({
+    limit: 10,
+    type: parsedData.type,
+    location: parsedData.location,
+    salary: parsedData.salary,
+  });
+
+  return { jobs };
+}
+
 export default function JobsPage({ loaderData }: Route.ComponentProps) {
+  const { jobs } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
 
   function handleFilterChange(key: string, value: string) {
@@ -33,19 +71,18 @@ export default function JobsPage({ loaderData }: Route.ComponentProps) {
       <Hero title="Jobs" subtitle="Companies looking for makers" />
       <div className="grid grid-cols-6 gap-20 items-start">
         <div className="grid grid-cols-3 col-span-4 gap-5">
-          {Array.from({ length: 10 }).map((_, index) => (
+          {jobs.map((job) => (
             <JobCard
-              key={index}
-              id="jobId"
-              companyName="Tesla"
-              companyLogoUrl="https://github.com/facebook.png"
-              companyLocation="San Francisco, CA"
-              title="Software Engineer"
-              postedAt="12 hours ago"
-              employmentType="Full-time"
-              locationType="Remote"
-              salaryMin={100000}
-              salaryMax={120000}
+              key={job.job_id}
+              id={job.job_id.toString()}
+              companyName={job.company_name}
+              companyLogoUrl={job.company_logo}
+              companyLocation={job.company_location}
+              title={job.position}
+              postedAt={job.created_at}
+              employmentType={job.job_type}
+              locationType={job.location}
+              salary={job.salary_range}
             />
           ))}
         </div>
