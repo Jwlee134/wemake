@@ -16,7 +16,7 @@ import {
 interface TeamCardProps {
   id: string;
   leaderName: string;
-  leaderAvatarUrl: string;
+  leaderAvatarUrl: string | null;
   positions: string[];
   projectDescription: string;
 }
@@ -29,18 +29,18 @@ export default function TeamCard({
   projectDescription,
 }: TeamCardProps) {
   return (
-    <Link to={`/teams/${id}`}>
-      <Card className="bg-transparent hover:bg-card/50 transition-colors">
+    <Link to={`/teams/${id}`} className="block">
+      <Card className="bg-transparent hover:bg-card/50 transition-colors h-full flex flex-col justify-between">
         <CardHeader className="flex flex-row items-center">
           <CardTitle className="text-sm leading-loose space-x-1">
             <Badge
               variant={"secondary"}
               className="inline-flex shadow-sm items-center text-sm gap-1"
             >
-              <span>@{leaderName}</span>
+              <span>{leaderName}</span>
               <Avatar className="size-5">
                 <AvatarFallback>N</AvatarFallback>
-                <AvatarImage src={leaderAvatarUrl} />
+                {leaderAvatarUrl && <AvatarImage src={leaderAvatarUrl} />}
               </Avatar>
             </Badge>
             <span>is looking for</span>

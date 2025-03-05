@@ -11,6 +11,7 @@ import { DateTime } from "luxon";
 import { getPosts } from "~/features/community/queries";
 import { getGptIdeas } from "~/features/ideas/queries";
 import { getJobs } from "~/features/jobs/queries";
+import { getTeams } from "~/features/teams/queries";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,21 +21,22 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const [products, posts, gptIdeas, jobs] = await Promise.all([
+  const [products, posts, gptIdeas, jobs, teams] = await Promise.all([
     getProductsByDateRange({
       startDate: DateTime.now().startOf("day"),
       endDate: DateTime.now().endOf("day"),
     }),
     getPosts({ limit: 8 }),
     getGptIdeas({ limit: 8 }),
-    getJobs({ limit: 11 }),
+    getJobs({ limit: 8 }),
+    getTeams({ limit: 10 }),
   ]);
 
-  return { products, posts, gptIdeas, jobs };
+  return { products, posts, gptIdeas, jobs, teams };
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { products, posts, gptIdeas, jobs } = loaderData;
+  const { products, posts, gptIdeas, jobs, teams } = loaderData;
 
   return (
     <div className="px-20 space-y-40">
@@ -152,18 +154,14 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             <Link to="/teams">Explore all teams &rarr;</Link>
           </Button>
         </div>
-        {Array.from({ length: 10 }).map((_, index) => (
+        {teams.map((team) => (
           <TeamCard
-            key={index}
-            id="teamId"
-            leaderName="Jaewon"
-            leaderAvatarUrl="https://github.com/jwlee134.png"
-            positions={[
-              "React Developer",
-              "Backend Developer",
-              "Project Manager",
-            ]}
-            projectDescription={"a new social media platform"}
+            key={team.team_id}
+            id={team.team_id.toString()}
+            leaderName={team.team_leader.username}
+            leaderAvatarUrl={team.team_leader.avatar}
+            positions={team.roles.split(",")}
+            projectDescription={team.product_description}
           />
         ))}
       </div>
