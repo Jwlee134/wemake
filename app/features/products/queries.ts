@@ -160,3 +160,15 @@ export async function getPagesBySearch({ query }: { query: string }) {
 
   return Math.ceil(count / PAGE_SIZE);
 }
+
+export async function getProductById(productId: string) {
+  const { data, error } = await client
+    .from("product_overview_view")
+    .select("*")
+    .eq("product_id", productId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}

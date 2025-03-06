@@ -4,13 +4,6 @@ import { ReviewCard } from "../components/review-card";
 import { Dialog, DialogTrigger } from "~/common/components/ui/dialog";
 import { CreateReviewDialog } from "../components/create-review-dialog";
 
-export function meta({ params }: Route.MetaArgs) {
-  return [
-    { title: `Product Reviews | wemake` },
-    { name: "description", content: "Product reviews and ratings" },
-  ];
-}
-
 export default function ProductReviewsPage({
   loaderData,
 }: Route.ComponentProps) {
