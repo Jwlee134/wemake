@@ -44,8 +44,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     getPostReplies(data.postId),
   ]);
 
-  console.log(JSON.stringify(replies, null, 2));
-
   return { post, replies };
 }
 

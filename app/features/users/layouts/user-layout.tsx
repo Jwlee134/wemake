@@ -16,18 +16,28 @@ import {
 } from "~/common/components/ui/dialog";
 import { Textarea } from "~/common/components/ui/textarea";
 import { cn } from "~/lib/utils";
+import type { Route } from "./+types/user-layout";
+import { getUserProfile } from "../queries";
 
-export default function UserLayout() {
+export async function loader({ params }: Route.LoaderArgs) {
+  const user = await getUserProfile(params.username!);
+
+  return { user };
+}
+
+export default function UserLayout({ loaderData }: Route.ComponentProps) {
+  const { user } = loaderData;
+
   return (
     <div className="space-y-10">
       <div className="flex items-center gap-4">
         <Avatar className="size-40">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>N</AvatarFallback>
+          <AvatarImage src={user.avatar ?? ""} />
+          <AvatarFallback>{user.username.slice(0, 1)}</AvatarFallback>
         </Avatar>
         <div className="space-y-5">
           <div className="flex gap-2">
-            <h1 className="text-2xl font-semibold">John Doe</h1>
+            <h1 className="text-2xl font-semibold">{user.username}</h1>
             <Button variant="outline" asChild>
               <Link to="/my/settings">Edit Profile</Link>
             </Button>
@@ -58,17 +68,19 @@ export default function UserLayout() {
           </div>
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">@john.doe</span>
-            <Badge variant="secondary">Product Designer</Badge>
-            <Badge variant="secondary">100 followers</Badge>
-            <Badge variant="secondary">100 following</Badge>
+            <Badge variant="secondary" className="capitalize">
+              {user.role}
+            </Badge>
+            <Badge variant="secondary">{user.followers} followers</Badge>
+            <Badge variant="secondary">{user.following} following</Badge>
           </div>
         </div>
       </div>
       <div className="flex gap-4">
         {[
-          { label: "About", href: "/users/john.doe" },
-          { label: "Products", href: "/users/john.doe/products" },
-          { label: "Posts", href: "/users/john.doe/posts" },
+          { label: "About", href: `/users/${user.username}` },
+          { label: "Products", href: `/users/${user.username}/products` },
+          { label: "Posts", href: `/users/${user.username}/posts` },
         ].map((item) => (
           <NavLink
             key={item.label}
@@ -86,7 +98,7 @@ export default function UserLayout() {
         ))}
       </div>
       <div className="max-w-screen-md">
-        <Outlet />
+        <Outlet context={{ headline: user.headline, bio: user.bio }} />
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ import {
   jsonb,
   primaryKey,
   bigint,
-  boolean,
   integer,
 } from "drizzle-orm/pg-core";
 import { products } from "../products/schema";
