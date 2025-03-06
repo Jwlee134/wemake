@@ -50,9 +50,9 @@ export async function getUserProducts(username: string) {
 
 export async function getUserPosts(username: string) {
   const { data, error } = await client
-    .from("posts")
+    .from("community_post_list_view")
     .select("*")
-    .eq("username", username);
+    .eq("author_username", username);
 
   if (error) throw error;
 

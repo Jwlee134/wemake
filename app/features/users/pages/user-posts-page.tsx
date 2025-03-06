@@ -1,6 +1,6 @@
 import { PostCard } from "~/features/community/components/post-card";
 import type { Route } from "./+types/user-posts-page";
-
+import { getUserPosts } from "../queries";
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `User Posts / wemake` },
@@ -8,18 +8,26 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export default function UserPostsPage() {
+export async function loader({ params }: Route.LoaderArgs) {
+  const posts = await getUserPosts(params.username!);
+
+  return { posts };
+}
+
+export default function UserPostsPage({ loaderData }: Route.ComponentProps) {
+  const { posts } = loaderData;
+
   return (
     <div className="flex flex-col gap-5">
-      {Array.from({ length: 10 }).map((_, index) => (
+      {posts.map((post) => (
         <PostCard
-          key={index}
-          id={index}
-          title="What is the best way to learn React?"
-          authorName="Jaewon"
-          authorAvatarUrl="https://github.com/apple.png"
-          category="React"
-          postedAt="12 hours ago"
+          key={post.post_id}
+          id={post.post_id}
+          title={post.title}
+          authorName={post.author_name}
+          authorAvatarUrl={post.author_avatar}
+          category={post.topic}
+          postedAt={post.created_at}
           expanded
         />
       ))}
