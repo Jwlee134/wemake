@@ -3,14 +3,25 @@ import type { Route } from "./+types/product-reviews-page";
 import { ReviewCard } from "../components/review-card";
 import { Dialog, DialogTrigger } from "~/common/components/ui/dialog";
 import { CreateReviewDialog } from "../components/create-review-dialog";
+import { getProductReviews } from "../queries";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const reviews = await getProductReviews(params.productId!);
+
+  return { reviews };
+}
 
 export default function ProductReviewsPage({
   loaderData,
 }: Route.ComponentProps) {
+  const { reviews } = loaderData;
+
   return (
     <div className="space-y-10 max-w-xl">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">100 reviews</h2>
+        <h2 className="text-2xl font-bold">
+          {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+        </h2>
         <Dialog>
           <DialogTrigger asChild>
             <Button variant={"secondary"}>Write a review</Button>
@@ -19,15 +30,15 @@ export default function ProductReviewsPage({
         </Dialog>
       </div>
       <div className="space-y-20">
-        {Array.from({ length: 10 }).map((_, index) => (
+        {reviews.map((review) => (
           <ReviewCard
-            key={index}
-            avatarUrl="https://github.com/meta.png"
-            authorName="John Doe"
-            username="username"
-            rating={5}
-            content="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-            timestamp="10 hours ago"
+            key={review.review_id}
+            avatarUrl={review.user.avatar ?? ""}
+            authorName={review.user.name}
+            username={review.user.username}
+            rating={review.rating}
+            content={review.review}
+            timestamp={review.created_at}
           />
         ))}
       </div>

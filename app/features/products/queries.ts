@@ -172,3 +172,27 @@ export async function getProductById(productId: string) {
 
   return data;
 }
+
+export async function getProductReviews(productId: string) {
+  const { data, error } = await client
+    .from("product_reviews")
+    .select(
+      `
+      review_id,
+      rating,
+      review,
+      created_at,
+      user:profiles!inner(
+        profile_id,
+        name,
+        username,
+        avatar
+      )
+    `
+    )
+    .eq("product_id", productId);
+
+  if (error) throw error;
+
+  return data;
+}

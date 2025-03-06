@@ -4,6 +4,7 @@ import {
   AvatarImage,
 } from "~/common/components/ui/avatar";
 import { StarIcon } from "lucide-react";
+import { DateTime } from "luxon";
 
 interface ReviewCardProps {
   avatarUrl: string;
@@ -31,7 +32,7 @@ export function ReviewCard({
         </Avatar>
         <div>
           <h3 className="text-lg font-bold">{authorName}</h3>
-          <p className="text-sm text-muted-foreground">@{username}</p>
+          <p className="text-sm text-muted-foreground">{username}</p>
         </div>
       </div>
       <div className="flex">
@@ -44,7 +45,9 @@ export function ReviewCard({
         ))}
       </div>
       <p className="text-sm text-muted-foreground">{content}</p>
-      <span className="text-xs text-muted-foreground">{timestamp}</span>
+      <span className="text-xs text-muted-foreground">
+        {DateTime.fromISO(timestamp).toRelative()}
+      </span>
     </div>
   );
 }
