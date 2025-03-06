@@ -17,7 +17,7 @@ export async function getProductsByDateRange({
       `
         product_id,
         name,
-        description,
+        tagline,
         stats->>upvotes,
         stats->>views,
         stats->>reviews,
@@ -90,7 +90,7 @@ export async function getProductsByCategory({
       `
         product_id,
         name,
-        description,
+        tagline,
         stats->>upvotes,
         stats->>views,
         stats->>reviews,
@@ -111,6 +111,48 @@ export async function getCategoryPages({ categoryId }: { categoryId: number }) {
     .from("products")
     .select("product_id", { count: "exact", head: true })
     .eq("category_id", categoryId);
+
+  if (error) throw error;
+
+  if (!count) return 1;
+
+  return Math.ceil(count / PAGE_SIZE);
+}
+
+export async function getProductsBySearch({
+  query,
+  page = 1,
+}: {
+  query: string;
+  page?: number;
+}) {
+  const { data, error } = await client
+    .from("products")
+    .select(
+      `
+        product_id,
+        name,
+        tagline,
+        stats->>upvotes,
+        stats->>views,
+        stats->>reviews,
+        created_at
+    `
+    )
+    .or(`name.ilike.%${query}%, tagline.ilike.%${query}%`)
+    .order("stats->>upvotes", { ascending: false })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function getPagesBySearch({ query }: { query: string }) {
+  const { count, error } = await client
+    .from("products")
+    .select("product_id", { count: "exact", head: true })
+    .or(`name.ilike.%${query}%, tagline.ilike.%${query}%`);
 
   if (error) throw error;
 
