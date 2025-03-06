@@ -2,6 +2,7 @@ import Hero from "~/common/components/hero";
 import type { Route } from "./+types/ideas-page";
 import { IdeaCard } from "../components/idea-card";
 import { getGptIdeas } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -11,9 +12,11 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
   const url = new URL(request.url);
   const limit = Number(url.searchParams.get("limit") ?? 10);
-  const ideas = await getGptIdeas({ limit });
+  const ideas = await getGptIdeas(client, { limit });
 
   return { ideas };
 }

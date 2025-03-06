@@ -5,6 +5,7 @@ import { Button } from "~/common/components/ui/button";
 import { getJobById } from "../queries";
 import { z } from "zod";
 import { DateTime } from "luxon";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ data: { job } }: Route.MetaArgs) {
   return [
@@ -17,14 +18,16 @@ const paramsSchema = z.object({
   jobId: z.coerce.number(),
 });
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { success, data } = paramsSchema.safeParse(params);
 
   if (!success) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const job = await getJobById(data.jobId);
+  const { client } = getServerClient(request);
+
+  const job = await getJobById(client, data.jobId);
 
   return { job };
 }

@@ -6,6 +6,7 @@ import { Button } from "~/common/components/ui/button";
 import { getGptIdea } from "../queries";
 import { data } from "react-router";
 import { DateTime } from "luxon";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
@@ -14,8 +15,10 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const idea = await getGptIdea({ id: params.ideaId });
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const idea = await getGptIdea(client, { id: params.ideaId });
 
   if (!idea) {
     throw data({ message: "Idea not found" }, { status: 404 });

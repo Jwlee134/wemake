@@ -4,9 +4,12 @@ import { ReviewCard } from "../components/review-card";
 import { Dialog, DialogTrigger } from "~/common/components/ui/dialog";
 import { CreateReviewDialog } from "../components/create-review-dialog";
 import { getProductReviews } from "../queries";
+import { getServerClient } from "~/supa-client";
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const reviews = await getProductReviews(params.productId!);
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const reviews = await getProductReviews(client, params.productId!);
 
   return { reviews };
 }

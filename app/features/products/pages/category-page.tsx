@@ -8,6 +8,7 @@ import {
   getCategoryPages,
 } from "../queries";
 import { z } from "zod";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -42,13 +43,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw new Response("Invalid query params", { status: 400 });
   }
 
+  const { client } = getServerClient(request);
+
   const [category, products, categoryPages] = await Promise.all([
-    getProductCategory(data.categoryId.toString()),
-    getProductsByCategory({
+    getProductCategory(client, data.categoryId.toString()),
+    getProductsByCategory(client, {
       categoryId: data.categoryId,
       page: queryData.page,
     }),
-    getCategoryPages({ categoryId: data.categoryId }),
+    getCategoryPages(client, { categoryId: data.categoryId }),
   ]);
 
   return { category, products, categoryPages };

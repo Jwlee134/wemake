@@ -7,6 +7,7 @@ import { useSearchParams } from "react-router";
 import { cn } from "~/lib/utils";
 import { getJobs } from "../queries";
 import { z } from "zod";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ loaderData }: Route.ComponentProps) {
   return [
@@ -43,7 +44,9 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Invalid search params", { status: 400 });
   }
 
-  const jobs = await getJobs({
+  const { client } = getServerClient(request);
+
+  const jobs = await getJobs(client, {
     limit: 10,
     type: parsedData.type,
     location: parsedData.location,

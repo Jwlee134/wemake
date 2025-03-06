@@ -5,6 +5,7 @@ import Hero from "~/common/components/hero";
 import { ProductCard } from "../components/product-card";
 import { getProductsByDateRange } from "../queries";
 import { DateTime } from "luxon";
+import { getServerClient } from "~/supa-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,22 +14,24 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
   const [dailyProducts, weeklyProducts, monthlyProducts, yearlyProducts] =
     await Promise.all([
-      getProductsByDateRange({
+      getProductsByDateRange(client, {
         startDate: DateTime.now().startOf("day"),
         endDate: DateTime.now().endOf("day"),
       }),
-      getProductsByDateRange({
+      getProductsByDateRange(client, {
         startDate: DateTime.now().startOf("week"),
         endDate: DateTime.now().endOf("week"),
       }),
-      getProductsByDateRange({
+      getProductsByDateRange(client, {
         startDate: DateTime.now().startOf("month"),
         endDate: DateTime.now().endOf("month"),
       }),
-      getProductsByDateRange({
+      getProductsByDateRange(client, {
         startDate: DateTime.now().startOf("year"),
         endDate: DateTime.now().endOf("year"),
       }),

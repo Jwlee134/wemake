@@ -1,6 +1,8 @@
 import { PostCard } from "~/features/community/components/post-card";
 import type { Route } from "./+types/user-posts-page";
 import { getUserPosts } from "../queries";
+import { getServerClient } from "~/supa-client";
+
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `User Posts / wemake` },
@@ -8,8 +10,10 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const posts = await getUserPosts(params.username!);
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const posts = await getUserPosts(client, params.username!);
 
   return { posts };
 }

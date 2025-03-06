@@ -8,6 +8,7 @@ import { Button } from "~/common/components/ui/button";
 import { Link } from "react-router";
 import ProductPagination from "~/common/components/product-pagination";
 import { getProductPagesByDateRange, getProductsByDateRange } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 // paramsSchema is used to validate the params from the route
 // z.coerce.number() is used to convert the params to numbers
@@ -49,12 +50,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const url = new URL(request.url);
 
-  const products = await getProductsByDateRange({
+  const { client } = getServerClient(request);
+
+  const products = await getProductsByDateRange(client, {
     startDate: date.startOf("day"),
     endDate: date.endOf("day"),
     page: Number(url.searchParams.get("page") ?? 1),
   });
-  const totalPages = await getProductPagesByDateRange({
+  const totalPages = await getProductPagesByDateRange(client, {
     startDate: date.startOf("day"),
     endDate: date.endOf("day"),
   });

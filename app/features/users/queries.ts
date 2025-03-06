@@ -1,6 +1,10 @@
-import client from "~/supa-client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "~/supa-client";
 
-export async function getUserProfile(username: string) {
+export async function getUserProfile(
+  client: SupabaseClient<Database>,
+  username: string
+) {
   const { data, error } = await client
     .from("profiles")
     .select(
@@ -24,7 +28,10 @@ export async function getUserProfile(username: string) {
   return data;
 }
 
-export async function getUserProducts(username: string) {
+export async function getUserProducts(
+  client: SupabaseClient<Database>,
+  username: string
+) {
   const { data, error } = await client
     .from("products")
     .select(
@@ -48,7 +55,10 @@ export async function getUserProducts(username: string) {
   return data;
 }
 
-export async function getUserPosts(username: string) {
+export async function getUserPosts(
+  client: SupabaseClient<Database>,
+  username: string
+) {
   const { data, error } = await client
     .from("community_post_list_view")
     .select("*")

@@ -15,6 +15,7 @@ import { PostCard } from "../components/post-card";
 import { getPosts, getPostTopics } from "../queries";
 import { Suspense } from "react";
 import { z } from "zod";
+import { getServerClient } from "~/supa-client";
 
 const searchParamsSchema = z.object({
   sorting: z.enum(["newest", "popular"]).optional().default("newest"),
@@ -36,6 +37,8 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   // const [postTopics, posts] = await Promise.all([getPostTopics(), getPosts()]);
 
+  const { client } = getServerClient(request);
+
   const url = new URL(request.url);
   const { success, data: parsedData } = searchParamsSchema.safeParse(
     Object.fromEntries(url.searchParams)
@@ -45,8 +48,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw data({ message: "Invalid search params" }, { status: 400 });
   }
 
-  const topics = getPostTopics();
-  const posts = getPosts({
+  const topics = getPostTopics(client);
+  const posts = getPosts(client, {
     limit: 20,
     sorting: parsedData.sorting,
     period: parsedData.period,

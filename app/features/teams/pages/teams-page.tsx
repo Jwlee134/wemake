@@ -2,13 +2,16 @@ import Hero from "~/common/components/hero";
 import type { Route } from "./+types/teams-page";
 import TeamCard from "../components/team-card";
 import { getTeams } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ matches }: Route.MetaArgs) {
   return [{ title: "Teams | wemake" }];
 }
 
-export async function loader() {
-  const teams = await getTeams({ limit: 10 });
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const teams = await getTeams(client, { limit: 10 });
 
   return { teams };
 }

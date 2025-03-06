@@ -20,6 +20,7 @@ import PostReply from "~/features/community/components/post-reply";
 import { getPostById, getPostReplies } from "../queries";
 import { z } from "zod";
 import { DateTime } from "luxon";
+import { getServerClient } from "~/supa-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -32,16 +33,18 @@ const paramsSchema = z.object({
   postId: z.coerce.number(),
 });
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { success, data } = paramsSchema.safeParse(params);
 
   if (!success) {
     throw new Response("Not Found", { status: 404 });
   }
 
+  const { client } = getServerClient(request);
+
   const [post, replies] = await Promise.all([
-    getPostById(data.postId),
-    getPostReplies(data.postId),
+    getPostById(client, data.postId),
+    getPostReplies(client, data.postId),
   ]);
 
   return { post, replies };

@@ -2,8 +2,9 @@ import db from "~/db";
 import { posts, postTopics, postUpvotes } from "./schema";
 import { count, eq } from "drizzle-orm";
 import { profiles } from "../users/schema";
-import client from "~/supa-client";
 import { DateTime } from "luxon";
+import type { Database } from "~/supa-client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // export async function getPostTopics() {
 //   const allPostTopics = await db
@@ -43,7 +44,7 @@ import { DateTime } from "luxon";
 //   return allPosts;
 // }
 
-export async function getPostTopics() {
+export async function getPostTopics(client: SupabaseClient<Database>) {
   const { data, error } = await client.from("post_topics").select("name, slug");
 
   if (error) throw new Error(error.message);
@@ -51,19 +52,22 @@ export async function getPostTopics() {
   return data;
 }
 
-export async function getPosts({
-  limit,
-  sorting = "newest",
-  period = "all",
-  keyword,
-  topic,
-}: {
-  limit: number;
-  sorting?: "newest" | "popular";
-  period?: "all" | "today" | "week" | "month" | "year";
-  keyword?: string;
-  topic?: string;
-}) {
+export async function getPosts(
+  client: SupabaseClient<Database>,
+  {
+    limit,
+    sorting = "newest",
+    period = "all",
+    keyword,
+    topic,
+  }: {
+    limit: number;
+    sorting?: "newest" | "popular";
+    period?: "all" | "today" | "week" | "month" | "year";
+    keyword?: string;
+    topic?: string;
+  }
+) {
   // posts_profile_id_profiles_profile_id_fk is used because posts is connected to profiles through profile_id,
   // and also is connected to profiles through post_upvotes.profile_id.
 
@@ -140,7 +144,10 @@ export async function getPosts({
   return data;
 }
 
-export async function getPostById(postId: number) {
+export async function getPostById(
+  client: SupabaseClient<Database>,
+  postId: number
+) {
   const { data, error } = await client
     .from("community_post_detail_view")
     .select("*")
@@ -152,7 +159,10 @@ export async function getPostById(postId: number) {
   return data;
 }
 
-export async function getPostReplies(postId: number) {
+export async function getPostReplies(
+  client: SupabaseClient<Database>,
+  postId: number
+) {
   const replyQuery = `
     reply_id,
     content,

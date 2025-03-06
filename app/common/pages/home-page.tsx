@@ -12,6 +12,7 @@ import { getPosts } from "~/features/community/queries";
 import { getGptIdeas } from "~/features/ideas/queries";
 import { getJobs } from "~/features/jobs/queries";
 import { getTeams } from "~/features/teams/queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,16 +21,18 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client, headers } = getServerClient(request);
+
   const [products, posts, gptIdeas, jobs, teams] = await Promise.all([
-    getProductsByDateRange({
+    getProductsByDateRange(client, {
       startDate: DateTime.now().startOf("day"),
       endDate: DateTime.now().endOf("day"),
     }),
-    getPosts({ limit: 8 }),
-    getGptIdeas({ limit: 8 }),
-    getJobs({ limit: 8 }),
-    getTeams({ limit: 10 }),
+    getPosts(client, { limit: 8 }),
+    getGptIdeas(client, { limit: 8 }),
+    getJobs(client, { limit: 8 }),
+    getTeams(client, { limit: 10 }),
   ]);
 
   return { products, posts, gptIdeas, jobs, teams };

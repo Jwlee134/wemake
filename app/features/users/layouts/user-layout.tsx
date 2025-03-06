@@ -18,9 +18,12 @@ import { Textarea } from "~/common/components/ui/textarea";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/user-layout";
 import { getUserProfile } from "../queries";
+import { getServerClient } from "~/supa-client";
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const user = await getUserProfile(params.username!);
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const user = await getUserProfile(client, params.username!);
 
   return { user };
 }

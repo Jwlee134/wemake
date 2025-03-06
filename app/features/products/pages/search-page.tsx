@@ -7,6 +7,7 @@ import { Form } from "react-router";
 import { Input } from "~/common/components/ui/input";
 import { Button } from "~/common/components/ui/button";
 import { getProductsBySearch, getPagesBySearch } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -34,12 +35,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return { products: [], totalPages: 1 };
   }
 
+  const { client } = getServerClient(request);
+
   const [products, totalPages] = await Promise.all([
-    getProductsBySearch({
+    getProductsBySearch(client, {
       query: parsedData.query,
       page: parsedData.page,
     }),
-    getPagesBySearch({ query: parsedData.query }),
+    getPagesBySearch(client, { query: parsedData.query }),
   ]);
 
   return { products, totalPages };

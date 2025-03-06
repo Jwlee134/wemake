@@ -1,8 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+import {
+  createBrowserClient,
+  createServerClient,
+  parseCookieHeader,
+  serializeCookieHeader,
+} from "@supabase/ssr";
 import type { Database as SupabaseDatabase } from "database.types";
 import type { MergeDeep, SetFieldType, SetNonNullable } from "type-fest";
 
-type Database = MergeDeep<
+export type Database = MergeDeep<
   SupabaseDatabase,
   {
     public: {
@@ -36,10 +41,48 @@ type Database = MergeDeep<
   }
 >;
 
-// Create a single supabase client for interacting with your database
-const client = createClient<Database>(
+// https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=npm&queryGroups=environment&environment=remix-loader&queryGroups=framework&framework=remix#create-a-client
+export const browserClient = createBrowserClient<Database>(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!
 );
 
-export default client;
+export function getServerClient(request: Request) {
+  const headers = new Headers();
+
+  const client = createServerClient<Database>(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return parseCookieHeader(request.headers.get("Cookie") ?? "");
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            headers.append(
+              "Set-Cookie",
+              serializeCookieHeader(name, value, options)
+            )
+          );
+        },
+      },
+    }
+  );
+
+  return { client, headers };
+}
+
+/* 
+
+Authentication Process
+
+Browser
+
+Client Cookies -> Supabase Server -> Who is the user?
+
+Server
+
+Browser sends Cookies -> loader() receives cookies -> Supabase client(cookies) -> Supabase Server -> Who is the user?
+
+*/

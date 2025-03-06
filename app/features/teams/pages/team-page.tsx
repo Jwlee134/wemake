@@ -17,6 +17,7 @@ import {
 } from "~/common/components/ui/card";
 import { z } from "zod";
 import { getTeamById } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ matches, params }: Route.MetaArgs) {
   return [{ title: `Team ${params.teamId} | wemake` }];
@@ -26,14 +27,16 @@ const paramsSchema = z.object({
   teamId: z.coerce.number(),
 });
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { success, data } = paramsSchema.safeParse(params);
 
   if (!success) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const team = await getTeamById(data.teamId);
+  const { client } = getServerClient(request);
+
+  const team = await getTeamById(client, data.teamId);
 
   return { team };
 }

@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router";
 import type { Route } from "./+types/user-page";
-import client from "~/supa-client";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -9,7 +9,9 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
   await client.rpc("track_event", {
     event_type: "profile_view",
     event_data: {

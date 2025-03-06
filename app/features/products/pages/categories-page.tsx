@@ -2,6 +2,7 @@ import Hero from "~/common/components/hero";
 import type { Route } from "./+types/categories-page";
 import CategoryCard from "../components/category-card";
 import { getProductCategories } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,8 +11,10 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
-  const categories = await getProductCategories();
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const categories = await getProductCategories(client);
 
   return { categories };
 }

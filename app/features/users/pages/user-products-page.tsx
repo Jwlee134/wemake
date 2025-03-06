@@ -1,6 +1,7 @@
 import type { Route } from "./+types/user-products-page";
 import { getUserProducts } from "../queries";
 import { ProductCard } from "~/features/products/components/product-card";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -9,8 +10,10 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const products = await getUserProducts(params.username!);
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+
+  const products = await getUserProducts(client, params.username!);
 
   return { products };
 }
