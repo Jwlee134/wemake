@@ -33,6 +33,27 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_id: string
+          event_type: Database["public"]["Enums"]["event_type"]
+        }
+        Insert: {
+          created_at?: string
+          event_data: Json
+          event_id?: string
+          event_type: Database["public"]["Enums"]["event_type"]
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_id?: string
+          event_type?: Database["public"]["Enums"]["event_type"]
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -971,9 +992,16 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      track_event: {
+        Args: {
+          event_type: Database["public"]["Enums"]["event_type"]
+          event_data: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
+      event_type: "product_view" | "profile_view" | "product_visit"
       job_types: "full-time" | "part-time" | "internship" | "freelance"
       locations: "on-site" | "remote" | "hybrid"
       notification_type: "follow" | "review" | "reply" | "mention"

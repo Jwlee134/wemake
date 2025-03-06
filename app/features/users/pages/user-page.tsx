@@ -1,11 +1,22 @@
 import { useOutletContext } from "react-router";
 import type { Route } from "./+types/user-page";
+import client from "~/supa-client";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `User Profile / wemake` },
     { name: "description", content: "User profile details" },
   ];
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
+  await client.rpc("track_event", {
+    event_type: "profile_view",
+    event_data: {
+      username: params.username,
+    },
+  });
+  return null;
 }
 
 export default function UserPage() {
