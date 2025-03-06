@@ -47,3 +47,15 @@ export async function getJobs({
 
   return data;
 }
+
+export async function getJobById(jobId: number) {
+  const { data, error } = await client
+    .from("jobs")
+    .select("*")
+    .eq("job_id", jobId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}

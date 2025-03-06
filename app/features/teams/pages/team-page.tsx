@@ -15,33 +15,53 @@ import {
   CardHeader,
   CardTitle,
 } from "~/common/components/ui/card";
+import { z } from "zod";
+import { getTeamById } from "../queries";
 
 export function meta({ matches, params }: Route.MetaArgs) {
   return [{ title: `Team ${params.teamId} | wemake` }];
 }
 
+const paramsSchema = z.object({
+  teamId: z.coerce.number(),
+});
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const { success, data } = paramsSchema.safeParse(params);
+
+  if (!success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const team = await getTeamById(data.teamId);
+
+  return { team };
+}
+
 export default function TeamPage({ loaderData }: Route.ComponentProps) {
+  const { team } = loaderData;
+
   return (
     <div className="space-y-10">
-      <Hero title="Join Jaewon's team" />
+      <Hero title={`Join ${team.team_leader.name}'s team`} />
       <div className="grid grid-cols-6 gap-40 items-start">
         <div className="col-span-4 grid grid-cols-4 gap-5">
           {[
             {
               title: "Product name",
-              value: "My Startup",
+              value: team.product_name,
             },
             {
               title: "Stage",
-              value: "MVP",
+              value: team.product_stage,
             },
             {
               title: "Team size",
-              value: "3",
+              value: team.team_size,
             },
             {
               title: "Equity offered",
-              value: "10%",
+              value: `${team.equity_split}%`,
             },
           ].map((item) => (
             <Card key={item.title}>
@@ -50,7 +70,7 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
                   {item.title}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="font-bold text-2xl">
+              <CardContent className="font-bold text-2xl capitalize">
                 <p>{item.value}</p>
               </CardContent>
             </Card>
@@ -63,13 +83,7 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               <ul className="text-lg font-bold list-disc list-inside">
-                {[
-                  "React Developer",
-                  "Backend Developer",
-                  "Full Stack Developer",
-                  "DevOps Engineer",
-                  "Product Manager",
-                ].map((role) => (
+                {team.roles.split(",").map((role) => (
                   <li key={role}>{role}</li>
                 ))}
               </ul>
@@ -82,22 +96,25 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-lg font-medium">
-              <p>
-                We are a team of 3 people looking for a React Developer and a
-                Backend Developer to build a social media platform.
-              </p>
+              <p>{team.product_description}</p>
             </CardContent>
           </Card>
         </div>
         <aside className="col-span-2 space-y-5 border rounded-lg shadow-sm p-6">
           <div className="flex gap-5">
             <Avatar className="size-14">
-              <AvatarFallback>N</AvatarFallback>
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>
+                {team.team_leader.name.slice(0, 1)}
+              </AvatarFallback>
+              {team.team_leader.avatar && (
+                <AvatarImage src={team.team_leader.avatar} />
+              )}
             </Avatar>
             <div className="flex flex-col gap-1">
-              <h4 className="font-medium text-lg">Jaewon</h4>
-              <Badge variant={"secondary"}>Entrepreneur</Badge>
+              <h4 className="font-medium text-lg">{team.team_leader.name}</h4>
+              <Badge variant={"secondary"} className="capitalize">
+                {team.team_leader.role}
+              </Badge>
             </div>
           </div>
           <Form className="space-y-5">

@@ -2,15 +2,36 @@ import { Badge } from "~/common/components/ui/badge";
 import type { Route } from "./+types/job-page";
 import { DotIcon } from "lucide-react";
 import { Button } from "~/common/components/ui/button";
+import { getJobById } from "../queries";
+import { z } from "zod";
+import { DateTime } from "luxon";
 
-export function meta({ params }: Route.MetaArgs) {
+export function meta({ data: { job } }: Route.MetaArgs) {
   return [
-    { title: `Job Details | wemake` },
-    { name: "description", content: "Job Details" },
+    { title: `${job.position} | wemake` },
+    { name: "description", content: job.overview },
   ];
 }
 
+const paramsSchema = z.object({
+  jobId: z.coerce.number(),
+});
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const { success, data } = paramsSchema.safeParse(params);
+
+  if (!success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const job = await getJobById(data.jobId);
+
+  return { job };
+}
+
 export default function JobPage({ loaderData }: Route.ComponentProps) {
+  const { job } = loaderData;
+
   return (
     <div>
       <div className="bg-gradient-to-tr from-primary/80 to-primary/10 h-60 w-full rounded-lg"></div>
@@ -19,40 +40,31 @@ export default function JobPage({ loaderData }: Route.ComponentProps) {
           <div>
             <div className="size-40 bg-white rounded-full overflow-hidden relative left-10">
               <img
-                src="https://github.com/meta.png"
+                src={job.company_logo}
                 className="size-full object-cover"
+                alt={job.company_name}
               />
             </div>
             <div>
-              <h1 className="text-4xl font-bold">Software Engineer</h1>
-              <h4 className="text-lg text-muted-foreground">Meta Inc.</h4>
+              <h1 className="text-4xl font-bold">{job.position}</h1>
+              <h4 className="text-lg text-muted-foreground">
+                {job.company_name}
+              </h4>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Badge variant={"secondary"}>Full-time</Badge>
-            <Badge variant={"secondary"}>Remote</Badge>
-            <Badge variant={"secondary"}>$100,000 - $150,000</Badge>
+          <div className="flex gap-2 capitalize">
+            <Badge variant={"secondary"}>{job.job_type}</Badge>
+            <Badge variant={"secondary"}>{job.location}</Badge>
+            <Badge variant={"secondary"}>{job.salary_range}</Badge>
           </div>
           <div className="space-y-2">
             <h4 className="text-2xl font-bold">Overview</h4>
-            <p className="text-muted-foreground">
-              We are looking for a software engineer with 3 years of experience
-              in React and Node.js. The ideal candidate will have a strong
-              understanding of React and Node.js and will be able to work in a
-              fast-paced environment.
-            </p>
+            <p className="text-muted-foreground">{job.overview}</p>
           </div>
           <div className="space-y-2">
             <h4 className="text-2xl font-bold">Responsibilities</h4>
             <ul className="text-muted-foreground list-disc list-inside">
-              {[
-                "Develop and maintain web applications using React and Node.js",
-                "Collaborate with cross-functional teams to define, design, and ship new features",
-                "Implement and maintain efficient code that is easy to maintain and scale",
-                "Integrate data storage solutions and improve data retrieval processes",
-                "Write code that is clean, readable, and easy to maintain",
-                "Participate in code reviews and provide feedback to other developers",
-              ].map((responsibility) => (
+              {job.responsibilities.split(",").map((responsibility) => (
                 <li key={responsibility}>{responsibility}</li>
               ))}
             </ul>
@@ -60,15 +72,7 @@ export default function JobPage({ loaderData }: Route.ComponentProps) {
           <div className="space-y-2">
             <h4 className="text-2xl font-bold">Qualifications</h4>
             <ul className="text-muted-foreground list-disc list-inside">
-              {[
-                "Bachelor's degree in Computer Science or related field",
-                "3+ years of experience in React and Node.js",
-                "Strong understanding of React and Node.js",
-                "Experience with modern web development tools and frameworks",
-                "Excellent problem-solving skills",
-                "Excellent communication skills",
-                "Excellent teamwork skills",
-              ].map((qualification) => (
+              {job.qualifications.split(",").map((qualification) => (
                 <li key={qualification}>{qualification}</li>
               ))}
             </ul>
@@ -76,14 +80,7 @@ export default function JobPage({ loaderData }: Route.ComponentProps) {
           <div className="space-y-2">
             <h4 className="text-2xl font-bold">Benefits</h4>
             <ul className="text-muted-foreground list-disc list-inside">
-              {[
-                "Flexible working hours",
-                "Remote work options",
-                "Health insurance",
-                "Dental insurance",
-                "Vision insurance",
-                "401(k) retirement savings plan",
-              ].map((benefit) => (
+              {job.benefits.split(",").map((benefit) => (
                 <li key={benefit}>{benefit}</li>
               ))}
             </ul>
@@ -91,24 +88,7 @@ export default function JobPage({ loaderData }: Route.ComponentProps) {
           <div className="space-y-2">
             <h4 className="text-2xl font-bold">Skills</h4>
             <ul className="text-muted-foreground list-disc list-inside">
-              {[
-                "React",
-                "Node.js",
-                "JavaScript",
-                "TypeScript",
-                "HTML",
-                "CSS",
-                "Git",
-                "GitHub",
-                "GitLab",
-                "Docker",
-                "Kubernetes",
-                "AWS",
-                "CI/CD",
-                "Testing",
-                "Agile",
-                "Scrum",
-              ].map((skill) => (
+              {job.skills.split(",").map((skill) => (
                 <li key={skill}>{skill}</li>
               ))}
             </ul>
@@ -117,19 +97,23 @@ export default function JobPage({ loaderData }: Route.ComponentProps) {
         <div className="col-span-2 flex flex-col gap-5 border rounded-lg mt-32 p-6 sticky top-20">
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Avg. Salary</span>
-            <span className="text-2xl font-medium">$100,000 - $150,000</span>
+            <span className="text-2xl font-medium">{job.salary_range}</span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Type</span>
-            <span className="text-2xl font-medium">Full-time</span>
+            <span className="text-2xl font-medium capitalize">
+              {job.job_type}
+            </span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Location</span>
-            <span className="text-2xl font-medium">Remote</span>
+            <span className="text-2xl font-medium capitalize">
+              {job.location}
+            </span>
           </div>
           <div className="flex items-center">
             <span className="text-sm text-muted-foreground">
-              Posted 2 days ago
+              Posted {DateTime.fromISO(job.created_at).toRelative()}
             </span>
             <DotIcon className="size-4" />
             <span className="text-sm text-muted-foreground">1000 views</span>

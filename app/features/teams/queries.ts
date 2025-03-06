@@ -20,3 +20,24 @@ export async function getTeams({ limit }: { limit: number }) {
 
   return data;
 }
+
+export async function getTeamById(teamId: number) {
+  const { data, error } = await client
+    .from("teams")
+    .select(
+      `
+      *,
+      team_leader:profiles!inner(
+        name,
+        avatar,
+        role
+      )
+      `
+    )
+    .eq("team_id", teamId)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}

@@ -139,3 +139,46 @@ export async function getPosts({
 
   return data;
 }
+
+export async function getPostById(postId: number) {
+  const { data, error } = await client
+    .from("community_post_detail_view")
+    .select("*")
+    .eq("post_id", postId)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
+export async function getPostReplies(postId: number) {
+  const replyQuery = `
+    reply_id,
+    content,
+    created_at,
+    author:profiles!inner(
+      profile_id,
+      name,
+      avatar,
+      username
+    )
+  `;
+
+  const { data, error } = await client
+    .from("post_replies")
+    .select(
+      `
+        ${replyQuery},
+        replies:post_replies!parent_reply_id(
+          ${replyQuery}
+        )
+      `
+    )
+    .eq("post_id", postId)
+    .is("parent_reply_id", null);
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}

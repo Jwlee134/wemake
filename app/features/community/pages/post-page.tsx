@@ -7,7 +7,7 @@ import {
 } from "~/common/components/ui/breadcrumb";
 import type { Route } from "./+types/post-page";
 import { Form, Link } from "react-router";
-import { ChevronUpIcon, DotIcon, MessageCircleIcon } from "lucide-react";
+import { ChevronUpIcon, DotIcon } from "lucide-react";
 import { Button } from "~/common/components/ui/button";
 import { Textarea } from "~/common/components/ui/textarea";
 import {
@@ -17,6 +17,9 @@ import {
 } from "~/common/components/ui/avatar";
 import { Badge } from "~/common/components/ui/badge";
 import PostReply from "~/features/community/components/post-reply";
+import { getPostById, getPostReplies } from "../queries";
+import { z } from "zod";
+import { DateTime } from "luxon";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -25,8 +28,29 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function PostPage({ params }: Route.ComponentProps) {
-  const { postId } = params;
+const paramsSchema = z.object({
+  postId: z.coerce.number(),
+});
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const { success, data } = paramsSchema.safeParse(params);
+
+  if (!success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const [post, replies] = await Promise.all([
+    getPostById(data.postId),
+    getPostReplies(data.postId),
+  ]);
+
+  console.log(JSON.stringify(replies, null, 2));
+
+  return { post, replies };
+}
+
+export default function PostPage({ loaderData }: Route.ComponentProps) {
+  const { post, replies } = loaderData;
 
   return (
     <div className="space-y-10">
@@ -40,15 +64,15 @@ export default function PostPage({ params }: Route.ComponentProps) {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/community?topic=productivity">Productivity</Link>
+              <Link to={`/community?topic=${post.topic_slug}`}>
+                {post.topic_name}
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={`/community/${postId}`}>
-                What is the best way to learn React?
-              </Link>
+              <Link to={`/community/${post.post_id}`}>{post.title}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -58,31 +82,26 @@ export default function PostPage({ params }: Route.ComponentProps) {
           <div className="flex w-full items-start gap-10">
             <Button variant={"outline"} className="flex flex-col h-14">
               <ChevronUpIcon className="size-4 shrink-0" />
-              <span>100</span>
+              <span>{post.upvotes}</span>
             </Button>
-            <div className="space-y-20">
+            <div className="space-y-20 w-full">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold">
-                  What is the best way to learn React?
-                </h2>
+                <h2 className="text-2xl font-bold">{post.title}</h2>
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <span>@Jaewon</span>
+                  <span>{post.author_name}</span>
                   <DotIcon className="size-4" />
-                  <span>12 hours ago</span>
+                  <span>{DateTime.fromISO(post.created_at).toRelative()}</span>
                   <DotIcon className="size-4" />
-                  <span>10 replies</span>
+                  <span>{post.replies_count} replies</span>
                 </div>
                 <p className="text-sm text-muted-foreground w-3/4">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Quisquam, quos. Lorem ipsum dolor sit amet consectetur
-                  adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet
-                  consectetur adipisicing elit. Quisquam, quos.
+                  {post.content}
                 </p>
               </div>
               <Form className="flex items-start gap-5 w-3/4">
                 <Avatar className="size-14">
                   <AvatarFallback>N</AvatarFallback>
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarImage src={post.author_avatar} />
                 </Avatar>
                 <div className="flex flex-col gap-5 w-full items-end">
                   <Textarea
@@ -95,13 +114,18 @@ export default function PostPage({ params }: Route.ComponentProps) {
               </Form>
               <div className="space-y-10">
                 <h4 className="text-lg font-semibold">Replies</h4>
-                <PostReply
-                  username="Jaewon"
-                  avatarUrl="https://github.com/shadcn.png"
-                  content="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-                  timestamp="2 hours ago"
-                  topLevel
-                />
+                {replies.map((reply) => (
+                  <PostReply
+                    key={reply.reply_id}
+                    userId={reply.author.profile_id}
+                    username={reply.author.username}
+                    avatarUrl={reply.author.avatar ?? ""}
+                    content={reply.content}
+                    timestamp={reply.created_at}
+                    topLevel
+                    replies={reply.replies}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -109,17 +133,21 @@ export default function PostPage({ params }: Route.ComponentProps) {
         <aside className="col-span-2 space-y-5 border rounded-lg shadow-sm p-6">
           <div className="flex gap-5">
             <Avatar className="size-14">
-              <AvatarFallback>N</AvatarFallback>
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>{post.author_name.slice(0, 1)}</AvatarFallback>
+              <AvatarImage src={post.author_avatar} />
             </Avatar>
-            <div className="flex flex-col gap-1">
-              <h4 className="font-medium text-lg">Jaewon</h4>
-              <Badge variant={"secondary"}>Entrepreneur</Badge>
+            <div className="flex flex-col gap-1 items-start">
+              <h4 className="font-medium text-lg">{post.author_name}</h4>
+              <Badge variant={"secondary"} className="capitalize">
+                {post.author_role}
+              </Badge>
             </div>
           </div>
           <div className="text-sm flex flex-col gap-2 text-muted-foreground">
-            <span>🎂 Joined 2 months ago</span>
-            <span>🚀 Launched 100+ projects</span>
+            <span>
+              🎂 Joined {DateTime.fromISO(post.author_created_at).toRelative()}
+            </span>
+            <span>🚀 Launched {post.products_count} projects</span>
           </div>
           <Button variant={"outline"} className="w-full">
             Follow
