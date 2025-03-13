@@ -151,7 +151,7 @@ export default function Navigation({
   hasMessages: boolean;
 }) {
   return (
-    <nav className="flex h-16 items-center justify-between backdrop-blur fixed top-0 left-0 right-0 z-50 bg-background/50 max-w-screen-2xl mx-auto">
+    <nav className="flex h-16 px-4 items-center justify-between backdrop-blur fixed top-0 left-0 right-0 z-50 bg-background/50 max-w-screen-2xl mx-auto">
       <div className="flex items-center">
         <Link to={"/"} className="font-bold tracking-tighter text-lg">
           wemake
