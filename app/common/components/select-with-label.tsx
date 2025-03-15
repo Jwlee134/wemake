@@ -26,6 +26,8 @@ export default function SelectWithLabel({
   description,
   placeholder,
   options,
+  name,
+  required,
 }: SelectWithLabelProps) {
   const [open, setOpen] = useState(false);
 
@@ -35,7 +37,12 @@ export default function SelectWithLabel({
         {label}
         <small className="text-muted-foreground">{description}</small>
       </Label>
-      <Select open={open} onOpenChange={setOpen}>
+      <Select
+        open={open}
+        onOpenChange={setOpen}
+        name={name}
+        required={required}
+      >
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

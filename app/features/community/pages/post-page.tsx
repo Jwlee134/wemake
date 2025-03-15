@@ -53,6 +53,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export default function PostPage({ loaderData }: Route.ComponentProps) {
   const { post, replies } = loaderData;
 
+  console.log(post, replies);
+
   return (
     <div className="space-y-10">
       <Breadcrumb>

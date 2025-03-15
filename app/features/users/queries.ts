@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { redirect } from "react-router";
 import type { Database } from "~/supa-client";
 
 export async function getUserById(
@@ -89,4 +90,14 @@ export async function getUserPosts(
   if (error) throw error;
 
   return data;
+}
+
+export async function getLoggedInUserId(client: SupabaseClient<Database>) {
+  const { data, error } = await client.auth.getUser();
+
+  if (error || data.user === null) {
+    throw redirect("/auth/login");
+  }
+
+  return data.user.id;
 }
