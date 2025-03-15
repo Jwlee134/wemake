@@ -14,10 +14,11 @@ import { DateTime } from "luxon";
 interface IdeaCardProps {
   id: string;
   title: string;
-  viewsCount: number;
-  postedAt: string;
-  likesCount: number;
+  viewsCount?: number;
+  postedAt?: string;
+  likesCount?: number;
   claimed?: boolean;
+  isOwned?: boolean;
 }
 
 export function IdeaCard({
@@ -27,16 +28,17 @@ export function IdeaCard({
   postedAt,
   likesCount,
   claimed,
+  isOwned,
 }: IdeaCardProps) {
   return (
     <Card className="bg-transparent hover:bg-card/50 transition-colors">
       <CardHeader>
-        <Link to={`/ideas/${id}`}>
+        <Link to={claimed ? "" : `/ideas/${id}`}>
           <CardTitle className="text-xl">
             <span
               className={cn(
                 claimed
-                  ? "bg-muted-foreground selection:bg-muted-foreground text-muted-foreground"
+                  ? "bg-muted-foreground selection:bg-muted-foreground text-muted-foreground break-all"
                   : ""
               )}
             >
@@ -45,20 +47,30 @@ export function IdeaCard({
           </CardTitle>
         </Link>
       </CardHeader>
-      <CardContent className="flex items-center text-sm">
-        <div className="flex items-center gap-1">
-          <EyeIcon className="size-4" />
-          <span>{viewsCount}</span>
-        </div>
-        <DotIcon className="size-4" />
-        <span>{DateTime.fromISO(postedAt).toRelative()}</span>
-      </CardContent>
+      {isOwned ? null : (
+        <CardContent className="flex items-center text-sm">
+          {viewsCount !== undefined ? (
+            <div className="flex items-center gap-1">
+              <EyeIcon className="size-4" />
+              <span>{viewsCount}</span>
+            </div>
+          ) : null}
+          {viewsCount !== undefined && postedAt !== undefined ? (
+            <DotIcon className="size-4" />
+          ) : null}
+          {postedAt ? (
+            <span>{DateTime.fromISO(postedAt).toRelative()}</span>
+          ) : null}
+        </CardContent>
+      )}
       <CardFooter className="flex justify-end gap-2">
-        <Button variant="outline" className="flex items-center">
-          <HeartIcon className="size-4" />
-          <span>{likesCount}</span>
-        </Button>
-        {!claimed ? (
+        {!claimed && !isOwned ? (
+          <Button variant="outline" className="flex items-center">
+            <HeartIcon className="size-4" />
+            {likesCount !== undefined ? <span>{likesCount}</span> : null}
+          </Button>
+        ) : null}
+        {!claimed && !isOwned ? (
           <Button asChild>
             <Link to={`/ideas/${id}/claim`}>Claim idea now &rarr;</Link>
           </Button>

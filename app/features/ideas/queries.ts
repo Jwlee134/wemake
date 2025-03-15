@@ -29,3 +29,17 @@ export async function getGptIdea(
 
   return data;
 }
+
+export async function getClaimedIdeas(
+  client: SupabaseClient<Database>,
+  { userId }: { userId: string }
+) {
+  const { data, error } = await client
+    .from("gpt_ideas")
+    .select("idea_id, idea, claimed_at")
+    .eq("claimed_by", userId);
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}

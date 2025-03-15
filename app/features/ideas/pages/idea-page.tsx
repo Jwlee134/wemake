@@ -4,9 +4,11 @@ import { DotIcon, HeartIcon } from "lucide-react";
 import { EyeIcon } from "lucide-react";
 import { Button } from "~/common/components/ui/button";
 import { getGptIdea } from "../queries";
-import { data } from "react-router";
+import { data, Form, redirect, useNavigation } from "react-router";
 import { DateTime } from "luxon";
 import { getServerClient } from "~/supa-client";
+import { getLoggedInUserId } from "~/features/users/queries";
+import { claimIdea } from "../mutations";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
@@ -24,11 +26,32 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw data({ message: "Idea not found" }, { status: 404 });
   }
 
+  if (idea.is_claimed) {
+    throw redirect("/ideas");
+  }
+
   return { idea };
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const idea = await getGptIdea(client, { id: params.ideaId });
+
+  if (idea.is_claimed) {
+    return { success: false };
+  }
+
+  await claimIdea({ client, ideaId: params.ideaId, userId });
+
+  return redirect(`/my/dashboard/ideas`);
 }
 
 export default function IdeaPage({ loaderData }: Route.ComponentProps) {
   const { idea } = loaderData;
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="space-y-10">
@@ -48,7 +71,13 @@ export default function IdeaPage({ loaderData }: Route.ComponentProps) {
             <span>{idea.likes}</span>
           </Button>
         </div>
-        <Button size={"lg"}>Claim idea now &rarr;</Button>
+        {idea.is_claimed ? null : (
+          <Form method="post">
+            <Button size={"lg"} type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Claiming..." : "Claim idea now →"}
+            </Button>
+          </Form>
+        )}
       </div>
     </div>
   );
