@@ -186,7 +186,8 @@ export async function getPostReplies(
       `
     )
     .eq("post_id", postId)
-    .is("parent_reply_id", null);
+    .is("parent_reply_id", null)
+    .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
 

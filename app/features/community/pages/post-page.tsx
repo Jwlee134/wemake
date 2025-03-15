@@ -6,8 +6,8 @@ import {
   BreadcrumbSeparator,
 } from "~/common/components/ui/breadcrumb";
 import type { Route } from "./+types/post-page";
-import { Form, Link } from "react-router";
-import { ChevronUpIcon, DotIcon } from "lucide-react";
+import { Form, Link, useOutletContext, useNavigation } from "react-router";
+import { ChevronUpIcon, DotIcon, Loader2Icon } from "lucide-react";
 import { Button } from "~/common/components/ui/button";
 import { Textarea } from "~/common/components/ui/textarea";
 import {
@@ -21,6 +21,9 @@ import { getPostById, getPostReplies } from "../queries";
 import { z } from "zod";
 import { DateTime } from "luxon";
 import { getServerClient } from "~/supa-client";
+import { getLoggedInUserId } from "~/features/users/queries";
+import { createReply } from "../mutations";
+import { useEffect, useRef } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -50,10 +53,53 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { post, replies };
 }
 
-export default function PostPage({ loaderData }: Route.ComponentProps) {
-  const { post, replies } = loaderData;
+const formSchema = z.object({
+  reply: z.string().min(1),
+  parentId: z.coerce.number().optional(),
+});
 
-  console.log(post, replies);
+export async function action({ request, params }: Route.ActionArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const formData = await request.formData();
+  const result = formSchema.safeParse(Object.fromEntries(formData));
+
+  if (!result.success) {
+    return { fieldErrors: result.error.flatten().fieldErrors, success: false };
+  }
+
+  const { reply, parentId } = result.data;
+
+  await createReply(client, {
+    postId: params.postId,
+    content: reply,
+    userId,
+    parentId,
+  });
+
+  return { success: true, fieldErrors: null };
+}
+
+export default function PostPage({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
+  const { isLoggedIn, username, avatar } = useOutletContext<{
+    isLoggedIn: boolean;
+    username: string | null;
+    avatar: string | null;
+  }>();
+  const { post, replies } = loaderData;
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (actionData?.success) {
+      formRef.current?.reset();
+    }
+  }, [actionData?.success]);
 
   return (
     <div className="space-y-10">
@@ -101,22 +147,42 @@ export default function PostPage({ loaderData }: Route.ComponentProps) {
                   {post.content}
                 </p>
               </div>
-              <Form className="flex items-start gap-5 w-3/4">
-                <Avatar className="size-14">
-                  <AvatarFallback>N</AvatarFallback>
-                  <AvatarImage src={post.author_avatar} />
-                </Avatar>
-                <div className="flex flex-col gap-5 w-full items-end">
-                  <Textarea
-                    placeholder="Add a comment"
-                    className="w-full resize-none"
-                    rows={5}
-                  />
-                  <Button type="submit">Reply</Button>
-                </div>
-              </Form>
+              {isLoggedIn ? (
+                <Form
+                  ref={formRef}
+                  className="flex items-start gap-5 w-3/4"
+                  method="post"
+                >
+                  <Avatar className="size-14">
+                    <AvatarFallback>{username?.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={avatar ?? ""} />
+                  </Avatar>
+                  <div className="flex flex-col gap-5 w-full items-end">
+                    <Textarea
+                      placeholder="Add a comment"
+                      className="w-full resize-none"
+                      rows={5}
+                      name="reply"
+                    />
+                    {actionData?.fieldErrors?.reply && (
+                      <p className="text-red-500 font-medium text-xs">
+                        {actionData.fieldErrors.reply}
+                      </p>
+                    )}
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <Loader2Icon className="animate-spin" />
+                      ) : (
+                        "Reply"
+                      )}
+                    </Button>
+                  </div>
+                </Form>
+              ) : null}
               <div className="space-y-10">
-                <h4 className="text-lg font-semibold">Replies</h4>
+                <h4 className="text-lg font-semibold">
+                  {replies.length} Replies
+                </h4>
                 {replies.map((reply) => (
                   <PostReply
                     key={reply.reply_id}
@@ -126,6 +192,7 @@ export default function PostPage({ loaderData }: Route.ComponentProps) {
                     content={reply.content}
                     timestamp={reply.created_at}
                     topLevel
+                    topLevelId={reply.reply_id}
                     replies={reply.replies}
                   />
                 ))}

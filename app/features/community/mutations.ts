@@ -33,3 +33,23 @@ export async function createPost(
 
   return data;
 }
+
+export async function createReply(
+  client: SupabaseClient<Database>,
+  {
+    postId,
+    content,
+    userId,
+    parentId,
+  }: { postId: string; content: string; userId: string; parentId?: number }
+) {
+  const { error } = await client.from("post_replies").insert({
+    ...(!parentId
+      ? { post_id: parseInt(postId) }
+      : { parent_reply_id: parentId }),
+    content,
+    profile_id: userId,
+  });
+
+  if (error) throw error;
+}
