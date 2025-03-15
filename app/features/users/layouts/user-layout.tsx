@@ -36,7 +36,7 @@ export default function UserLayout({ loaderData }: Route.ComponentProps) {
       <div className="flex items-center gap-4">
         <Avatar className="size-40">
           <AvatarImage src={user.avatar ?? ""} />
-          <AvatarFallback>{user.username.slice(0, 1)}</AvatarFallback>
+          <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="space-y-5">
           <div className="flex gap-2">
@@ -55,7 +55,7 @@ export default function UserLayout({ loaderData }: Route.ComponentProps) {
                 </DialogHeader>
                 <DialogDescription className="space-y-4">
                   <span className="text-muted-foreground">
-                    Send a message to John Doe
+                    Send a message to {user.username}
                   </span>
                   <Form className="space-y-4">
                     <Textarea
@@ -70,7 +70,9 @@ export default function UserLayout({ loaderData }: Route.ComponentProps) {
             </Dialog>
           </div>
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">@john.doe</span>
+            <span className="text-sm text-muted-foreground">
+              {user.username}
+            </span>
             <Badge variant="secondary" className="capitalize">
               {user.role}
             </Badge>

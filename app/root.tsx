@@ -16,6 +16,7 @@ import type { Route } from "./+types/root";
 import Navigation from "./common/components/navigation";
 import { cn } from "./lib/utils";
 import { getServerClient } from "~/supa-client";
+import { getUserById } from "~/features/users/queries";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -54,13 +55,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export async function loader({ request }: Route.LoaderArgs) {
   const { client } = getServerClient(request);
 
-  const { data: user } = await client.auth.getUser();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (user) {
+    const profile = await getUserById(client, user.id);
 
-  return user;
+    return { user, profile };
+  }
+
+  return { user: null, profile: null };
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { user } = loaderData;
+  const { user, profile } = loaderData;
 
   const { pathname } = useLocation();
   const navigation = useNavigation();
@@ -79,6 +87,9 @@ export default function App({ loaderData }: Route.ComponentProps) {
           isLoggedIn={isLoggedIn}
           hasMessages={true}
           hasNotifications={true}
+          username={profile?.username}
+          name={profile?.name}
+          avatar={profile?.avatar}
         />
       )}
       <Outlet />

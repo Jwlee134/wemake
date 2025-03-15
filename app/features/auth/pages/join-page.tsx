@@ -47,6 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
     password: data.password,
     options: {
       data: {
+        // this is the data that will be stored in the raw_app_meta_data in supabase user.
         name: data.name,
         username: data.username,
       },

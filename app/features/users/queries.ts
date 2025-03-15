@@ -1,6 +1,28 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/supa-client";
 
+export async function getUserById(
+  client: SupabaseClient<Database>,
+  userId: string
+) {
+  const { data, error } = await client
+    .from("profiles")
+    .select(
+      `
+        profile_id,
+        name,
+        username,
+        avatar
+    `
+    )
+    .eq("profile_id", userId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
 export async function getUserProfile(
   client: SupabaseClient<Database>,
   username: string
