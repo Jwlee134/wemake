@@ -19,6 +19,7 @@ interface SelectWithLabelProps {
     label: string;
     value: string;
   }[];
+  defaultValue?: string;
 }
 
 export default function SelectWithLabel({
@@ -28,6 +29,7 @@ export default function SelectWithLabel({
   options,
   name,
   required,
+  defaultValue,
 }: SelectWithLabelProps) {
   const [open, setOpen] = useState(false);
 
@@ -42,6 +44,7 @@ export default function SelectWithLabel({
         onOpenChange={setOpen}
         name={name}
         required={required}
+        defaultValue={defaultValue}
       >
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />

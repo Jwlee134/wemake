@@ -1,4 +1,4 @@
-import { Form, Link, NavLink, Outlet } from "react-router";
+import { Form, Link, NavLink, Outlet, useOutletContext } from "react-router";
 import {
   Avatar,
   AvatarFallback,
@@ -29,6 +29,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function UserLayout({ loaderData }: Route.ComponentProps) {
+  const { isLoggedIn, username } = useOutletContext<{
+    isLoggedIn: boolean;
+    username: string | null;
+  }>();
   const { user } = loaderData;
 
   return (
@@ -41,33 +45,39 @@ export default function UserLayout({ loaderData }: Route.ComponentProps) {
         <div className="space-y-5">
           <div className="flex gap-2">
             <h1 className="text-2xl font-semibold">{user.username}</h1>
-            <Button variant="outline" asChild>
-              <Link to="/my/settings">Edit Profile</Link>
-            </Button>
-            <Button variant="secondary">Follow</Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="secondary">Message</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Message</DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="space-y-4">
-                  <span className="text-muted-foreground">
-                    Send a message to {user.username}
-                  </span>
-                  <Form className="space-y-4">
-                    <Textarea
-                      placeholder="Message"
-                      className="resize-none"
-                      rows={4}
-                    />
-                    <Button type="submit">Send</Button>
-                  </Form>
-                </DialogDescription>
-              </DialogContent>
-            </Dialog>
+            {isLoggedIn && username === user.username ? (
+              <Button variant="outline" asChild>
+                <Link to="/my/settings">Edit Profile</Link>
+              </Button>
+            ) : null}
+            {isLoggedIn && username !== user.username ? (
+              <Button variant="secondary">Follow</Button>
+            ) : null}
+            {isLoggedIn && username !== user.username ? (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="secondary">Message</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Message</DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription className="space-y-4">
+                    <span className="text-muted-foreground">
+                      Send a message to {user.username}
+                    </span>
+                    <Form className="space-y-4">
+                      <Textarea
+                        placeholder="Message"
+                        className="resize-none"
+                        rows={4}
+                      />
+                      <Button type="submit">Send</Button>
+                    </Form>
+                  </DialogDescription>
+                </DialogContent>
+              </Dialog>
+            ) : null}
           </div>
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">
