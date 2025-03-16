@@ -10,9 +10,21 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "~/common/components/ui/sidebar";
+import { getServerClient } from "~/supa-client";
+import type { Route } from "./+types/dashboard-layout";
+import { getLoggedInUserId, getProductsByUserId } from "../queries";
 
-export default function DashboardLayout() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+  const products = await getProductsByUserId(client, userId);
+
+  return { products };
+}
+
+export default function DashboardLayout({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
+  const { products } = loaderData;
 
   return (
     <SidebarProvider>
@@ -47,17 +59,22 @@ export default function DashboardLayout() {
           <SidebarGroup>
             <SidebarGroupLabel>Product Analytics</SidebarGroupLabel>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={location.pathname === "/my/dashboard/products/1"}
-                >
-                  <Link to="/my/dashboard/products/1">
-                    <RocketIcon className="size-4" />
-                    Product 1
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {products.map((product) => (
+                <SidebarMenuItem key={product.product_id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={
+                      location.pathname ===
+                      `/my/dashboard/products/${product.product_id}`
+                    }
+                  >
+                    <Link to={`/my/dashboard/products/${product.product_id}`}>
+                      <RocketIcon className="size-4" />
+                      {product.name}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>

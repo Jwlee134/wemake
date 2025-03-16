@@ -15,9 +15,26 @@ import { XAxis } from "recharts";
 import { CartesianGrid } from "recharts";
 import { ChartContainer } from "~/common/components/ui/chart";
 import { LineChart } from "recharts";
+import { getLoggedInUserId } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ matches }: Route.MetaArgs) {
   return [{ title: "Dashboard" }];
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const { data, error } = await client.rpc("get_dashboard_stats", {
+    user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { stats: data };
 }
 
 const chartData = [
@@ -35,7 +52,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function DashboardPage() {
+export default function DashboardPage({ loaderData }: Route.ComponentProps) {
+  const { stats } = loaderData;
+
   return (
     <div className="space-y-10">
       <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
@@ -47,10 +66,11 @@ export default function DashboardPage() {
           <ChartContainer config={chartConfig}>
             <LineChart
               accessibilityLayer
-              data={chartData}
+              data={stats}
               margin={{
                 left: 12,
                 right: 12,
+                top: 12,
               }}
             >
               <CartesianGrid vertical={false} />
@@ -59,7 +79,7 @@ export default function DashboardPage() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 3)}
+                padding={{ left: 16, right: 16 }}
               />
               <ChartTooltip
                 cursor={false}
