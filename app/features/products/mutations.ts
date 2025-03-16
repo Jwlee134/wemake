@@ -16,3 +16,36 @@ export async function createProductReview(
 
   if (error) throw new Error(error.message);
 }
+
+export async function createProduct(
+  client: SupabaseClient<Database>,
+  data: {
+    userId: string;
+    name: string;
+    tagline: string;
+    icon: string;
+    description: string;
+    category: number;
+    url: string;
+    howItWorks: string;
+  }
+) {
+  const { data: product, error } = await client
+    .from("products")
+    .insert({
+      name: data.name,
+      tagline: data.tagline,
+      description: data.description,
+      category_id: data.category,
+      profile_id: data.userId,
+      icon: data.icon,
+      url: data.url,
+      how_it_works: data.howItWorks,
+    })
+    .select("product_id")
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return product;
+}
