@@ -9,19 +9,38 @@ import {
   CardHeader,
   CardTitle,
 } from "~/common/components/ui/card";
+import { getLoggedInUserId } from "../queries";
+import { getServerClient } from "~/supa-client";
 
 export function meta({ matches }: Route.MetaArgs) {
   return [{ title: "Dashboard Product | wemake" }];
 }
 
-const chartData = [
-  { month: "January", views: 186, visitors: 100 },
-  { month: "February", views: 305, visitors: 200 },
-  { month: "March", views: 237, visitors: 300 },
-  { month: "April", views: 73, visitors: 400 },
-  { month: "May", views: 209, visitors: 500 },
-  { month: "June", views: 214, visitors: 600 },
-];
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const { error: productError } = await client
+    .from("products")
+    .select("product_id")
+    .eq("profile_id", userId)
+    .eq("product_id", params.productId)
+    .single();
+
+  if (productError) {
+    throw new Error(productError.message);
+  }
+  const { data, error } = await client.rpc("get_product_stats", {
+    product_id: params.productId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { stats: data };
+}
+
 const chartConfig = {
   views: {
     label: "Page Views",
@@ -33,7 +52,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function DashboardProductPage() {
+export default function DashboardProductPage({
+  loaderData,
+}: Route.ComponentProps) {
+  const { stats } = loaderData;
+
   return (
     <div className="space-y-10">
       <h1 className="text-2xl font-semibold mb-6">Analytics</h1>
@@ -45,11 +68,8 @@ export default function DashboardProductPage() {
           <ChartContainer config={chartConfig}>
             <AreaChart
               accessibilityLayer
-              data={chartData}
-              margin={{
-                left: 12,
-                right: 12,
-              }}
+              data={stats}
+              margin={{ left: 12, right: 12, top: 12, bottom: 12 }}
             >
               <CartesianGrid vertical={false} />
               <XAxis
@@ -57,7 +77,7 @@ export default function DashboardProductPage() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 3)}
+                padding={{ left: 16, right: 16 }}
               />
               <ChartTooltip
                 cursor={false}

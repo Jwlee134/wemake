@@ -37,14 +37,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { stats: data };
 }
 
-const chartData = [
-  { month: "January", views: 186 },
-  { month: "February", views: 305 },
-  { month: "March", views: 237 },
-  { month: "April", views: 73 },
-  { month: "May", views: 209 },
-  { month: "June", views: 214 },
-];
 const chartConfig = {
   views: {
     label: "👀",

@@ -992,25 +992,25 @@ export type Database = {
       }
     }
     Functions: {
-      get_dashboard_stats:
-        | {
-            Args: {
-              user_id: string
-            }
-            Returns: {
-              views: number
-              month: string
-            }[]
-          }
-        | {
-            Args: {
-              user_id: string
-            }
-            Returns: {
-              views: number
-              month: string
-            }[]
-          }
+      get_dashboard_stats: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          views: number
+          month: string
+        }[]
+      }
+      get_product_stats: {
+        Args: {
+          product_id: string
+        }
+        Returns: {
+          month: string
+          views: number
+          visitors: number
+        }[]
+      }
       track_event: {
         Args: {
           event_type: Database["public"]["Enums"]["event_type"]
