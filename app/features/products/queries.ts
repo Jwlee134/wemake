@@ -218,7 +218,8 @@ export async function getProductReviews(
       )
     `
     )
-    .eq("product_id", productId);
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 

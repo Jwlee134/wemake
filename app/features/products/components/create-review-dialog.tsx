@@ -1,6 +1,6 @@
 import { StarIcon } from "lucide-react";
 import { useState } from "react";
-import { Form } from "react-router";
+import { Form, useActionData, useNavigation } from "react-router";
 import InputWithLabel from "~/common/components/input-with-label";
 import { Button } from "~/common/components/ui/button";
 import {
@@ -12,10 +12,14 @@ import {
 import { DialogContent } from "~/common/components/ui/dialog";
 import { Label } from "~/common/components/ui/label";
 import { cn } from "~/lib/utils";
+import type { action } from "../pages/product-reviews-page";
 
 export function CreateReviewDialog() {
   const [rating, setRating] = useState<number>(0);
   const [hoveredRating, setHoveredRating] = useState<number>(0);
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
     <DialogContent className="sm:max-w-[425px]">
@@ -27,7 +31,7 @@ export function CreateReviewDialog() {
           Share your thoughts with other users
         </DialogDescription>
       </DialogHeader>
-      <Form className="space-y-6">
+      <Form className="space-y-6" method="post">
         <div>
           <Label className="flex flex-col gap-0.5">
             Rating
@@ -63,16 +67,29 @@ export function CreateReviewDialog() {
               </label>
             ))}
           </div>
+          {actionData?.fieldErrors?.rating ? (
+            <small className="text-red-500">
+              {actionData.fieldErrors.rating}
+            </small>
+          ) : null}
         </div>
         <InputWithLabel
           textarea
+          name="review"
           label="Write a review"
           description="Maximum 1000 characters"
           placeholder="Tell us more about your experience with this product"
           required
         />
+        {actionData?.fieldErrors?.review ? (
+          <small className="text-red-500">
+            {actionData.fieldErrors.review}
+          </small>
+        ) : null}
         <DialogFooter>
-          <Button type="submit">Submit review</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit review"}
+          </Button>
         </DialogFooter>
       </Form>
     </DialogContent>
