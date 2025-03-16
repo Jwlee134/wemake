@@ -28,3 +28,18 @@ export async function updateUser(
 
   if (error) throw new Error(error.message);
 }
+
+export async function updateUserAvatar(
+  client: SupabaseClient<Database>,
+  userId: string,
+  avatar: string
+) {
+  const { error } = await client
+    .from("profiles")
+    .update({
+      avatar: avatar,
+    })
+    .eq("profile_id", userId);
+
+  if (error) throw new Error(error.message);
+}
