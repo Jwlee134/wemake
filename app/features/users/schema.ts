@@ -9,6 +9,7 @@ import {
   primaryKey,
   bigint,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { products } from "../products/schema";
 import { posts } from "../community/schema";
@@ -47,12 +48,16 @@ export const profiles = pgTable("profiles", {
 export const follows = pgTable(
   "follows",
   {
-    follower_id: uuid().references(() => profiles.profile_id, {
-      onDelete: "cascade",
-    }),
-    following_id: uuid().references(() => profiles.profile_id, {
-      onDelete: "cascade",
-    }),
+    follower_id: uuid()
+      .notNull()
+      .references(() => profiles.profile_id, {
+        onDelete: "cascade",
+      }),
+    following_id: uuid()
+      .notNull()
+      .references(() => profiles.profile_id, {
+        onDelete: "cascade",
+      }),
     created_at: timestamp().notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.follower_id, t.following_id] })]
@@ -84,6 +89,7 @@ export const notifications = pgTable("notifications", {
     onDelete: "cascade",
   }),
   type: notificationType().notNull(),
+  seen: boolean().notNull().default(false),
   created_at: timestamp().notNull().defaultNow(),
 });
 
