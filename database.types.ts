@@ -361,6 +361,7 @@ export type Database = {
           post_id: number | null
           product_id: number | null
           receiver_id: string
+          seen: boolean
           sender_id: string | null
           type: Database["public"]["Enums"]["notification_type"]
         }
@@ -370,6 +371,7 @@ export type Database = {
           post_id?: number | null
           product_id?: number | null
           receiver_id: string
+          seen?: boolean
           sender_id?: string | null
           type: Database["public"]["Enums"]["notification_type"]
         }
@@ -379,6 +381,7 @@ export type Database = {
           post_id?: number | null
           product_id?: number | null
           receiver_id?: string
+          seen?: boolean
           sender_id?: string | null
           type?: Database["public"]["Enums"]["notification_type"]
         }

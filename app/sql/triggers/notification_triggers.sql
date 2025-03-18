@@ -27,8 +27,8 @@ begin
     from public.products
     where product_id = new.product_id;
     
-    insert into public.notifications (type, sender_id, receiver_id)
-    values ('review', new.profile_id, product_owner_id);
+    insert into public.notifications (type, sender_id, receiver_id, product_id)
+    values ('review', new.profile_id, product_owner_id, new.product_id);
     return new;
 end;
 $$;
@@ -50,8 +50,8 @@ begin
     from public.posts
     where post_id = new.post_id;
     
-    insert into public.notifications (type, sender_id, receiver_id)
-    values ('reply', new.profile_id, post_owner_id);
+    insert into public.notifications (type, sender_id, receiver_id, post_id)
+    values ('reply', new.profile_id, post_owner_id, new.post_id);
     return new;
 end;
 $$;
@@ -60,3 +60,7 @@ create trigger notify_post_reply_trigger
 after insert on public.post_replies
 for each row
 execute function public.notify_post_reply();
+
+
+drop function public.notify_product_review() cascade;
+drop function public.notify_post_reply() cascade;

@@ -123,3 +123,38 @@ export async function getProductsByUserId(
 
   return data;
 }
+
+export async function getNotifications(
+  client: SupabaseClient<Database>,
+  userId: string
+) {
+  const { data, error } = await client
+    .from("notifications")
+    .select(
+      `
+      notification_id,
+      type,
+      created_at,
+      sender:profiles!notifications_sender_id_profiles_profile_id_fk(
+        profile_id,
+        username,
+        avatar
+      ),
+      product:products(
+        product_id,
+        name
+      ),
+      post:posts(
+        post_id,
+        title
+      ),
+      seen
+    `
+    )
+    .eq("receiver_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data;
+}
