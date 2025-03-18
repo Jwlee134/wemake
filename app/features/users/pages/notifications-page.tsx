@@ -28,6 +28,7 @@ export default function NotificationsPage({
         {notifications.map((notification) => (
           <NotificationCard
             key={notification.notification_id}
+            id={notification.notification_id}
             avatarUrl={notification.sender?.avatar ?? ""}
             username={notification.sender?.username ?? ""}
             type={notification.type}

@@ -16,7 +16,7 @@ import type { Route } from "./+types/root";
 import Navigation from "./common/components/navigation";
 import { cn } from "./lib/utils";
 import { getServerClient } from "~/supa-client";
-import { getUserById } from "~/features/users/queries";
+import { countNotifications, getUserById } from "~/features/users/queries";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -59,16 +59,23 @@ export async function loader({ request }: Route.LoaderArgs) {
     data: { user },
   } = await client.auth.getUser();
   if (user) {
-    const profile = await getUserById(client, user.id);
+    const [profile, count] = await Promise.all([
+      getUserById(client, user.id),
+      countNotifications(client, user.id),
+    ]);
 
-    return { user, profile };
+    return {
+      user,
+      profile,
+      hasNotifications: count !== null && count > 0,
+    };
   }
 
-  return { user: null, profile: null };
+  return { user: null, profile: null, hasNotifications: false };
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { user, profile } = loaderData;
+  const { user, profile, hasNotifications } = loaderData;
 
   const { pathname } = useLocation();
   const navigation = useNavigation();
@@ -86,7 +93,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <Navigation
           isLoggedIn={isLoggedIn}
           hasMessages={true}
-          hasNotifications={true}
+          hasNotifications={hasNotifications}
           username={profile?.username}
           name={profile?.name}
           avatar={profile?.avatar}

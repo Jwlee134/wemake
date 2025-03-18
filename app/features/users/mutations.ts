@@ -43,3 +43,16 @@ export async function updateUserAvatar(
 
   if (error) throw new Error(error.message);
 }
+
+export async function markNotificationAsRead(
+  client: SupabaseClient<Database>,
+  { notificationId, userId }: { notificationId: string; userId: string }
+) {
+  const { error } = await client
+    .from("notifications")
+    .update({ seen: true })
+    .eq("notification_id", notificationId)
+    .eq("receiver_id", userId);
+
+  if (error) throw new Error(error.message);
+}

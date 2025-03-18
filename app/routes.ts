@@ -115,6 +115,10 @@ export default [
       ]),
     ]),
     route("/notifications", "features/users/pages/notifications-page.tsx"),
+    route(
+      "/notifications/:notificationId/read",
+      "features/users/pages/notification-read-page.tsx"
+    ),
     route("/profile", "features/users/pages/profile-page.tsx"),
     route("/settings", "features/users/pages/settings-page.tsx"),
   ]),
