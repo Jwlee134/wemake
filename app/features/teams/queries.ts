@@ -35,7 +35,7 @@ export async function getTeamById(
       `
       *,
       team_leader:profiles!inner(
-        name,
+        username,
         avatar,
         role
       )

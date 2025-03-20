@@ -46,7 +46,7 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="space-y-10">
-      <Hero title={`Join ${team.team_leader.name}'s team`} />
+      <Hero title={`Join ${team.team_leader.username}'s team`} />
       <div className="grid grid-cols-6 gap-40 items-start">
         <div className="col-span-4 grid grid-cols-4 gap-5">
           {[
@@ -107,26 +107,32 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
           <div className="flex gap-5">
             <Avatar className="size-14">
               <AvatarFallback>
-                {team.team_leader.name.slice(0, 1)}
+                {team.team_leader.username.slice(0, 1)}
               </AvatarFallback>
               {team.team_leader.avatar && (
                 <AvatarImage src={team.team_leader.avatar} />
               )}
             </Avatar>
             <div className="flex flex-col gap-1">
-              <h4 className="font-medium text-lg">{team.team_leader.name}</h4>
+              <h4 className="font-medium text-lg">
+                {team.team_leader.username}
+              </h4>
               <Badge variant={"secondary"} className="capitalize">
                 {team.team_leader.role}
               </Badge>
             </div>
           </div>
-          <Form className="space-y-5">
+          <Form
+            className="space-y-5"
+            method="POST"
+            action={`/users/${team.team_leader.username}/messages`}
+          >
             <InputWithLabel
               label="Introduce yourself"
-              name="introduction"
+              name="message"
               placeholder="e.g. I'm a React Developer and I'm looking for a team to join."
               required
-              id="introduction"
+              id="message"
               description="Tell us about yourself"
               textarea
             />

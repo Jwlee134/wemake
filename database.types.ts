@@ -997,6 +997,15 @@ export type Database = {
       }
     }
     Functions: {
+      get_chat_room: {
+        Args: {
+          sender_id: string
+          receiver_id: string
+        }
+        Returns: {
+          message_room_id: number
+        }[]
+      }
       get_dashboard_stats: {
         Args: {
           user_id: string
