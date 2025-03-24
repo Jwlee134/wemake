@@ -188,3 +188,69 @@ export async function getMessages(
 
   return data;
 }
+
+export async function getMessagesByRoomId(
+  client: SupabaseClient<Database>,
+  { roomId, userId }: { roomId: string; userId: string }
+) {
+  const { count, error: countError } = await client
+    .from("message_room_members")
+    .select("*", { count: "exact", head: true })
+    .eq("message_room_id", roomId)
+    .eq("profile_id", userId);
+
+  if (countError) throw countError;
+
+  if (count === 0) throw new Error("Room not found");
+
+  const { data, error } = await client
+    .from("messages")
+    .select(
+      `
+      *,
+      sender:profiles!inner(
+        avatar
+      )
+      `
+    )
+    .eq("message_room_id", roomId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function getRoomParticipants(
+  client: SupabaseClient<Database>,
+  { roomId, userId }: { roomId: string; userId: string }
+) {
+  const { count, error: countError } = await client
+    .from("message_room_members")
+    .select("*", { count: "exact", head: true })
+    .eq("message_room_id", roomId)
+    .eq("profile_id", userId);
+
+  if (countError) throw countError;
+
+  if (count === 0) throw new Error("Room not found");
+
+  const { data, error } = await client
+    .from("message_room_members")
+    .select(
+      `
+        profiles!inner(
+          profile_id,
+          name,
+          avatar
+        )
+      `
+    )
+    .eq("message_room_id", roomId)
+    .neq("profile_id", userId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
