@@ -21,9 +21,27 @@ import {
   getRoomParticipants,
 } from "../queries";
 import { getServerClient } from "~/supa-client";
+import { sendMessageToRoom } from "../mutations";
+import { useEffect, useRef } from "react";
 
 export function meta() {
   return [{ title: "Message | wemake" }];
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const formData = await request.formData();
+  const message = formData.get("message") as string;
+
+  await sendMessageToRoom(client, {
+    senderId: userId,
+    message,
+    messageRoomId: parseInt(params.roomId),
+  });
+
+  return { success: true };
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -42,8 +60,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   return { messages, userId, participants };
 }
-export default function MessagePage({ loaderData }: Route.ComponentProps) {
+export default function MessagePage({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
   const { messages, userId, participants } = loaderData;
+  const ref = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (actionData?.success) {
+      ref.current?.reset();
+    }
+  }, [actionData]);
 
   return (
     <div className="h-full flex flex-col justify-between">
@@ -73,10 +101,15 @@ export default function MessagePage({ loaderData }: Route.ComponentProps) {
       </div>
       <Card>
         <CardHeader>
-          <Form className="relative flex justify-end items-center">
+          <Form
+            ref={ref}
+            className="relative flex justify-end items-center"
+            method="post"
+          >
             <Textarea
               placeholder="Type your message here."
               className="resize-none"
+              name="message"
             />
             <Button type="submit" size={"icon"} className="absolute right-2">
               <SendIcon className="size-4" />

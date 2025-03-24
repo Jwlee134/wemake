@@ -110,3 +110,34 @@ export async function sendMessage(
     return newMessageRoom.message_room_id;
   }
 }
+
+export async function sendMessageToRoom(
+  client: SupabaseClient<Database>,
+  {
+    senderId,
+    message,
+    messageRoomId,
+  }: {
+    senderId: string;
+    message: string;
+    messageRoomId: number;
+  }
+) {
+  const { count, error: countError } = await client
+    .from("message_room_members")
+    .select("*", { count: "exact", head: true })
+    .eq("message_room_id", messageRoomId)
+    .eq("profile_id", senderId);
+
+  if (countError) throw countError;
+
+  if (count === 0) throw new Error("Room not found");
+
+  const { error } = await client.from("messages").insert({
+    message_room_id: messageRoomId,
+    sender_id: senderId,
+    content: message,
+  });
+
+  if (error) throw new Error(error.message);
+}
