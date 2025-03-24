@@ -173,3 +173,18 @@ export async function countNotifications(
 
   return count;
 }
+
+export async function getMessages(
+  client: SupabaseClient<Database>,
+  userId: string
+) {
+  const { data, error } = await client
+    .from("messages_view")
+    .select("*")
+    .eq("profile_id", userId)
+    .neq("other_profile_id", userId);
+
+  if (error) throw error;
+
+  return data;
+}

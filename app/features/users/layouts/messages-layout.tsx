@@ -7,21 +7,33 @@ import {
   SidebarProvider,
 } from "~/common/components/ui/sidebar";
 import MessageCard from "~/features/users/components/message-card";
+import type { Route } from "./+types/messages-layout";
+import { getServerClient } from "~/supa-client";
+import { getLoggedInUserId, getMessages } from "~/features/users/queries";
 
-export default function MessagesLayout() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const { client } = getServerClient(request);
+  const userId = await getLoggedInUserId(client);
+
+  const messages = await getMessages(client, userId);
+
+  return { messages };
+}
+
+export default function MessagesLayout({ loaderData }: Route.ComponentProps) {
   return (
     <SidebarProvider className="max-h-[calc(100svh-14rem)] overflow-hidden h-[calc(100svh-14rem)] min-h-full">
       <Sidebar className="pt-16" variant="floating">
         <SidebarContent>
           <SidebarGroup>
             <SidebarMenu>
-              {Array.from({ length: 20 }).map((_, index) => (
+              {loaderData.messages.map((message) => (
                 <MessageCard
-                  key={index}
-                  messageId={`${index}`}
-                  avatarUrl="https://github.com/shadcn.png"
-                  name="John Doe"
-                  lastMessage="Last Message"
+                  key={message.message_room_id}
+                  messageId={message.message_room_id.toString()}
+                  avatarUrl={message.avatar}
+                  name={message.name}
+                  lastMessage={message.last_message}
                 />
               ))}
             </SidebarMenu>

@@ -979,6 +979,53 @@ export type Database = {
         }
         Relationships: []
       }
+      messages_view: {
+        Row: {
+          avatar: string | null
+          last_message: string | null
+          message_room_id: number | null
+          name: string | null
+          other_profile_id: string | null
+          profile_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_room_members_message_room_id_message_rooms_message_room"
+            columns: ["message_room_id"]
+            isOneToOne: false
+            referencedRelation: "message_rooms"
+            referencedColumns: ["message_room_id"]
+          },
+          {
+            foreignKeyName: "message_room_members_profile_id_profiles_profile_id_fk"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "community_post_detail_view"
+            referencedColumns: ["author_id"]
+          },
+          {
+            foreignKeyName: "message_room_members_profile_id_profiles_profile_id_fk"
+            columns: ["other_profile_id"]
+            isOneToOne: false
+            referencedRelation: "community_post_detail_view"
+            referencedColumns: ["author_id"]
+          },
+          {
+            foreignKeyName: "message_room_members_profile_id_profiles_profile_id_fk"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "message_room_members_profile_id_profiles_profile_id_fk"
+            columns: ["other_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       product_overview_view: {
         Row: {
           avg_rating: number | null
