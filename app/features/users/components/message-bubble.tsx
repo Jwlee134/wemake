@@ -9,15 +9,18 @@ interface MessageBubbleProps {
   avatarUrl?: string;
   message: string;
   isCurrentUser?: boolean;
+  ref?: (node: HTMLDivElement) => void;
 }
 
 export default function MessageBubble({
   avatarUrl,
   message,
   isCurrentUser = false,
+  ref,
 }: MessageBubbleProps) {
   return (
     <div
+      ref={ref}
       className={cn(
         "flex items-end gap-4",
         isCurrentUser && "flex-row-reverse"

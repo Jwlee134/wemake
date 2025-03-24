@@ -205,14 +205,7 @@ export async function getMessagesByRoomId(
 
   const { data, error } = await client
     .from("messages")
-    .select(
-      `
-      *,
-      sender:profiles!inner(
-        avatar
-      )
-      `
-    )
+    .select("*")
     .eq("message_room_id", roomId)
     .order("created_at", { ascending: true });
 

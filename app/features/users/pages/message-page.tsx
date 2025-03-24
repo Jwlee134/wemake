@@ -10,7 +10,11 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "~/common/components/ui/avatar";
-import { Form } from "react-router";
+import {
+  Form,
+  useOutletContext,
+  type ShouldRevalidateFunctionArgs,
+} from "react-router";
 import { Textarea } from "~/common/components/ui/textarea";
 import { Button } from "~/common/components/ui/button";
 import { SendIcon } from "lucide-react";
@@ -20,9 +24,9 @@ import {
   getMessagesByRoomId,
   getRoomParticipants,
 } from "../queries";
-import { getServerClient } from "~/supa-client";
+import { browserClient, getServerClient } from "~/supa-client";
 import { sendMessageToRoom } from "../mutations";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function meta() {
   return [{ title: "Message | wemake" }];
@@ -60,11 +64,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   return { messages, userId, participants };
 }
+
+export function shouldRevalidate(args: ShouldRevalidateFunctionArgs) {
+  return false;
+}
+
 export default function MessagePage({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { messages, userId, participants } = loaderData;
+  const { avatar } = useOutletContext<{ avatar: string }>();
+  const [messages, setMessages] = useState(loaderData.messages);
+  const { userId, participants } = loaderData;
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -72,6 +83,33 @@ export default function MessagePage({
       ref.current?.reset();
     }
   }, [actionData]);
+
+  useEffect(() => {
+    const channel = browserClient
+      .channel(`room:${userId}-${participants.profiles.profile_id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          setMessages((prev) => [
+            ...prev,
+            payload.new as (typeof loaderData.messages)[number],
+          ]);
+        }
+      );
+
+    channel.subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
+
+  const messageRef = useCallback((node: HTMLDivElement) => {
+    if (node) {
+      node.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, []);
 
   return (
     <div className="h-full flex flex-col justify-between">
@@ -90,10 +128,15 @@ export default function MessagePage({
         </CardHeader>
       </Card>
       <div className="overflow-y-auto py-10 flex flex-col justify-start h-full space-y-4">
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <MessageBubble
             key={message.message_id}
-            avatarUrl={message.sender.avatar ?? ""}
+            ref={index === messages.length - 1 ? messageRef : undefined}
+            avatarUrl={
+              message.sender_id === userId
+                ? avatar
+                : participants.profiles.avatar ?? ""
+            }
             message={message.content}
             isCurrentUser={message.sender_id === userId}
           />

@@ -48,8 +48,8 @@ export type Database = MergeDeep<
 
 // https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=npm&queryGroups=environment&environment=remix-loader&queryGroups=framework&framework=remix#create-a-client
 export const browserClient = createBrowserClient<Database>(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
 );
 
 export function getServerClient(request: Request) {
