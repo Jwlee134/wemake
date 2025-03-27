@@ -20,3 +20,14 @@ export async function claimIdea({
 
   if (error) throw error;
 }
+
+export async function insertIdeas(
+  client: SupabaseClient<Database>,
+  ideas: string[]
+) {
+  const { error } = await client
+    .from("gpt_ideas")
+    .insert(ideas.map((idea) => ({ idea })));
+
+  if (error) throw error;
+}

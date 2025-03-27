@@ -1,7 +1,6 @@
 create function public.handle_user_creation()
 returns trigger
 language plpgsql
-security definer set search_path = public
 as $$
 begin
     -- create an anonymous profile for the user

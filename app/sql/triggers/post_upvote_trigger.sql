@@ -1,7 +1,6 @@
 create function public.handle_post_upvote()
 returns trigger
 language plpgsql
-security definer set search_path = public
 as $$
 begin
     update public.posts 
@@ -14,7 +13,6 @@ $$;
 create function public.handle_post_downvote()
 returns trigger
 language plpgsql
-security definer set search_path = public
 as $$
 begin
     update public.posts 

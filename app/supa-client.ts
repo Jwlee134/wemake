@@ -4,6 +4,7 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import type { Database as SupabaseDatabase } from "database.types";
 import type { MergeDeep, SetFieldType, SetNonNullable } from "type-fest";
 
@@ -91,3 +92,8 @@ Server
 Browser sends Cookies -> loader() receives cookies -> Supabase client(cookies) -> Supabase Server -> Who is the user?
 
 */
+
+export const adminClient = createClient<Database>(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
